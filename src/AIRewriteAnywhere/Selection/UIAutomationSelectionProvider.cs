@@ -70,7 +70,7 @@ public class UIAutomationSelectionProvider
             }
             catch { }
 
-            // 4. Check handle-based element
+            // 4. Check handle-based element and all text-capable descendants (crucial for WinUI 3 / WhatsApp)
             if (targetHwnd != IntPtr.Zero)
             {
                 try
@@ -80,12 +80,14 @@ public class UIAutomationSelectionProvider
                     {
                         candidates.Add(windowEl);
 
-                        // Find descendant that supports text pattern
                         var textCond = new PropertyCondition(AutomationElement.IsTextPatternAvailableProperty, true);
-                        var textChild = windowEl.FindFirst(TreeScope.Descendants, textCond);
-                        if (textChild != null)
+                        var textChildren = windowEl.FindAll(TreeScope.Descendants, textCond);
+                        if (textChildren != null)
                         {
-                            candidates.Add(textChild);
+                            foreach (AutomationElement child in textChildren)
+                            {
+                                candidates.Add(child);
+                            }
                         }
                     }
                 }
@@ -106,9 +108,21 @@ public class UIAutomationSelectionProvider
                         {
                             var bounds = Rect.Empty;
                             var rects = range.GetBoundingRectangles();
-                            if (rects != null && rects.Length > 0)
+                            if (rects != null && rects.Length > 0 && rects[0].Width > 0 && rects[0].Height > 0)
                             {
                                 bounds = rects[0];
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    var elemRect = target.Current.BoundingRectangle;
+                                    if (!elemRect.IsEmpty && elemRect.Width > 0 && elemRect.Height > 0)
+                                    {
+                                        bounds = elemRect;
+                                    }
+                                }
+                                catch { }
                             }
 
                             _logger.LogInfo("Successfully retrieved selection via UI Automation TextPattern.");

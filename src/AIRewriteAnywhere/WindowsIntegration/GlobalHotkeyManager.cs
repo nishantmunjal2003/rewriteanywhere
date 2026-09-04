@@ -50,7 +50,14 @@ public class GlobalHotkeyManager : IDisposable
 
         uint vk = (uint)KeyInterop.VirtualKeyFromKey(key);
 
-        var success = NativeMethods.RegisterHotKey(_hwndSource.Handle, _currentHotkeyId, fsModifiers, vk);
+        bool success = false;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            success = NativeMethods.RegisterHotKey(_hwndSource.Handle, _currentHotkeyId, fsModifiers, vk);
+            if (success) break;
+            Thread.Sleep(80);
+        }
+
         if (success)
         {
             _isRegistered = true;

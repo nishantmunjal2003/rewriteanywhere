@@ -55,6 +55,13 @@ public static class ActiveWindowTracker
         var currentThread = NativeMethods.GetCurrentThreadId();
         var targetThread = NativeMethods.GetWindowThreadProcessId(hwnd, out _);
 
+        // Win32 foreground lock bypass: synthesize an Alt key up event so Windows grants SetForegroundWindow rights
+        try
+        {
+            NativeMethods.keybd_event((byte)NativeMethods.VK_MENU, 0, NativeMethods.KEYEVENTF_KEYUP, UIntPtr.Zero);
+        }
+        catch { }
+
         if (targetThread != 0 && currentThread != targetThread)
         {
             NativeMethods.AttachThreadInput(currentThread, targetThread, true);

@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Windows.Automation;
 using AIRewriteAnywhere.AI;
+using AIRewriteAnywhere.AI.Gemini;
 using AIRewriteAnywhere.AI.Mock;
 using AIRewriteAnywhere.Clipboard;
 using AIRewriteAnywhere.Common;

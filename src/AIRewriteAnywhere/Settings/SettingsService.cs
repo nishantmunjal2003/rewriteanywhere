@@ -63,8 +63,8 @@ public class SettingsService : ISettingsService
             var loaded = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
             _settings = loaded ?? new AppSettings();
 
-            // Auto-migrate retired or problematic Gemini models to current active model
-            if (_settings.GeminiModel == "gemini-2.5-flash" || _settings.GeminiModel == "gemini-1.5-flash" || _settings.GeminiModel == "gemini-3.6-flash" || string.IsNullOrWhiteSpace(_settings.GeminiModel))
+            // Auto-migrate retired or problematic Gemini models to current high-speed active model
+            if (_settings.GeminiModel == "gemini-flash-latest" || _settings.GeminiModel == "gemini-2.5-flash" || _settings.GeminiModel == "gemini-1.5-flash" || _settings.GeminiModel == "gemini-3.6-flash" || string.IsNullOrWhiteSpace(_settings.GeminiModel))
             {
                 _settings.GeminiModel = Constants.DefaultModels.Gemini;
             }

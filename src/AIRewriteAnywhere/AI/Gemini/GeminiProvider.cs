@@ -58,12 +58,13 @@ public class GeminiProvider : IAIProvider
 
         var targetModel = string.IsNullOrWhiteSpace(model) ? Constants.DefaultModels.Gemini : model;
 
-        // Auto-upgrade retired/deprecated models to latest available
+        // Auto-upgrade retired/deprecated models to latest high-speed available
         if (targetModel.Equals("gemini-2.5-flash", StringComparison.OrdinalIgnoreCase) ||
             targetModel.Equals("gemini-1.5-flash", StringComparison.OrdinalIgnoreCase) ||
-            targetModel.Equals("gemini-1.5-pro", StringComparison.OrdinalIgnoreCase))
+            targetModel.Equals("gemini-1.5-pro", StringComparison.OrdinalIgnoreCase) ||
+            targetModel.Equals("gemini-3.6-flash", StringComparison.OrdinalIgnoreCase))
         {
-            targetModel = "gemini-3.6-flash";
+            targetModel = "gemini-3.1-flash-lite";
         }
 
         var sw = Stopwatch.StartNew();
@@ -75,10 +76,10 @@ public class GeminiProvider : IAIProvider
 
             var response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);
 
-            // If 404 (model unavailable) or 503 (service overloaded), attempt fallback to gemini-flash-latest
-            if ((response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.ServiceUnavailable) && targetModel != "gemini-flash-latest")
+            // If 404 (model unavailable) or 503 (service overloaded) or 429, attempt fallback to high-speed gemini-3.1-flash-lite
+            if ((response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.ServiceUnavailable) && targetModel != "gemini-3.1-flash-lite")
             {
-                targetModel = "gemini-flash-latest";
+                targetModel = "gemini-3.1-flash-lite";
                 response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);
             }
 

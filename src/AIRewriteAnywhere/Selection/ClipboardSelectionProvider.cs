@@ -34,12 +34,16 @@ public class ClipboardSelectionProvider
             await _clipboardManager.ClearAsync();
             await Task.Delay(20);
 
+            // Release physical modifier keys (Shift, Alt, Win) from hotkey invocation
+            ReleaseModifierKeys();
+            await Task.Delay(25);
+
             // Send simulated Ctrl+C
             SendCtrlC();
 
-            // Wait up to 250ms for clipboard text to populate
+            // Wait up to 300ms for clipboard text to populate
             string text = string.Empty;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 12; i++)
             {
                 await Task.Delay(25);
                 text = await _clipboardManager.GetTextAsync();
@@ -81,6 +85,28 @@ public class ClipboardSelectionProvider
             _clipboardManager.Restore(backup);
             return null;
         }
+    }
+
+    private static void ReleaseModifierKeys()
+    {
+        var inputs = new NativeMethods.INPUT[4];
+        inputs[0].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[0].u.ki.wVk = NativeMethods.VK_SHIFT;
+        inputs[0].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[1].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[1].u.ki.wVk = NativeMethods.VK_MENU;
+        inputs[1].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[2].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[2].u.ki.wVk = NativeMethods.VK_CONTROL;
+        inputs[2].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[3].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[3].u.ki.wVk = 0x5B; // VK_LWIN
+        inputs[3].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
     }
 
     private static void SendCtrlC()

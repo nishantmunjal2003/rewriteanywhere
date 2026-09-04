@@ -9,6 +9,7 @@ public class ClipboardManager : IClipboardManager
     private readonly IAppLogger _logger;
     private const int MaxRetries = 10;
     private const int RetryDelayMs = 25;
+    private static string? _lastSetText;
 
     public ClipboardManager(IAppLogger logger)
     {
@@ -64,6 +65,11 @@ public class ClipboardManager : IClipboardManager
             }
         });
 
+        if (string.IsNullOrEmpty(backup.PlainText) && !string.IsNullOrEmpty(_lastSetText))
+        {
+            backup.PlainText = _lastSetText;
+        }
+
         return backup;
     }
 
@@ -116,6 +122,11 @@ public class ClipboardManager : IClipboardManager
                 }
             }
         });
+
+        if (!string.IsNullOrEmpty(backup.PlainText))
+        {
+            _lastSetText = backup.PlainText;
+        }
     }
 
     public Task<string> GetTextAsync()
@@ -145,11 +156,18 @@ public class ClipboardManager : IClipboardManager
             }
         });
 
+        if (string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_lastSetText))
+        {
+            text = _lastSetText;
+        }
+
         return Task.FromResult(text);
     }
 
     public Task SetTextAsync(string text)
     {
+        _lastSetText = text ?? string.Empty;
+
         ExecuteOnSta(() =>
         {
             for (int attempt = 0; attempt < MaxRetries; attempt++)
@@ -176,6 +194,8 @@ public class ClipboardManager : IClipboardManager
 
     public Task ClearAsync()
     {
+        _lastSetText = null;
+
         ExecuteOnSta(() =>
         {
             for (int attempt = 0; attempt < MaxRetries; attempt++)

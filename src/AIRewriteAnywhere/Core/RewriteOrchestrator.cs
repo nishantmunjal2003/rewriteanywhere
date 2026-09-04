@@ -24,6 +24,7 @@ public class RewriteOrchestrator : IRewriteOrchestrator
 
     public event Action<SelectionInfo>? ShowRewriteMenuRequested;
     public event Action<string, bool>? NotificationRequested;
+    public event Action? GenerationCompleted;
     public Func<string, string, Task<bool>>? ShowPreviewRequested { get; set; }
 
     public RewriteOrchestrator(
@@ -110,6 +111,7 @@ public class RewriteOrchestrator : IRewriteOrchestrator
         _logger.LogInfo($"Rewrite requested: Provider={providerType}, Model={model}, Mode={mode}");
 
         var response = await provider.RewriteAsync(request, apiKey, model, cancellationToken);
+        GenerationCompleted?.Invoke();
 
         if (!response.Success)
         {

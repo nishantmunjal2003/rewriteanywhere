@@ -38,18 +38,23 @@ public class TextReplacementService : ITextReplacementService
             if (selection.TargetHwnd != IntPtr.Zero)
             {
                 ActiveWindowTracker.RestoreFocusToWindow(selection.TargetHwnd);
-                await Task.Delay(50);
+                await Task.Delay(60);
             }
 
             // Put rewritten text onto clipboard
             await _clipboardManager.SetTextAsync(rewrittenText);
-            await Task.Delay(30);
+            await Task.Delay(40);
+
+            // Release any physical modifier keys before sending Ctrl+V
+            ReleaseModifierKeys();
+            await Task.Delay(25);
 
             // Synthesize Ctrl+V (Paste)
             SendCtrlV();
 
-            // Wait brief moment for the target window to accept the paste
-            await Task.Delay(60);
+            // Wait for target window to accept the paste
+            // WhatsApp Desktop and other UWP/WinUI 3 applications read the clipboard asynchronously via WinRT
+            await Task.Delay(350);
 
             // Record undo entry
             _lastUndoRecord = new UndoRecord(selection.Text, rewrittenText, selection.TargetHwnd, DateTime.Now);
@@ -84,16 +89,18 @@ public class TextReplacementService : ITextReplacementService
             if (record.TargetHwnd != IntPtr.Zero)
             {
                 ActiveWindowTracker.RestoreFocusToWindow(record.TargetHwnd);
-                await Task.Delay(50);
+                await Task.Delay(60);
             }
 
             // Put original text onto clipboard
             await _clipboardManager.SetTextAsync(record.OriginalText);
-            await Task.Delay(30);
+            await Task.Delay(40);
 
-            // Send Ctrl+Z or Ctrl+V with original text
+            // Release modifier keys and send Ctrl+V
+            ReleaseModifierKeys();
+            await Task.Delay(25);
             SendCtrlV();
-            await Task.Delay(60);
+            await Task.Delay(350);
 
             _clipboardManager.Restore(backup);
             _lastUndoRecord = null;
@@ -106,6 +113,28 @@ public class TextReplacementService : ITextReplacementService
             _clipboardManager.Restore(backup);
             return false;
         }
+    }
+
+    private static void ReleaseModifierKeys()
+    {
+        var inputs = new NativeMethods.INPUT[4];
+        inputs[0].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[0].u.ki.wVk = NativeMethods.VK_SHIFT;
+        inputs[0].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[1].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[1].u.ki.wVk = NativeMethods.VK_MENU;
+        inputs[1].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[2].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[2].u.ki.wVk = NativeMethods.VK_CONTROL;
+        inputs[2].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        inputs[3].type = NativeMethods.INPUT_KEYBOARD;
+        inputs[3].u.ki.wVk = 0x5B; // VK_LWIN
+        inputs[3].u.ki.dwFlags = NativeMethods.KEYEVENTF_KEYUP;
+
+        NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(NativeMethods.INPUT)));
     }
 
     private static void SendCtrlV()

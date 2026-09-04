@@ -134,6 +134,7 @@
                             Margin="0,0,10,0"
                             FontSize="13"
                             Cursor="Hand"
+                            IsCancel="True"
                             Click="Cancel_Click"/>
                     <Button Content="Replace Selection"
                             Background="#7C3AED"
@@ -143,6 +144,7 @@
                             FontSize="13"
                             FontWeight="SemiBold"
                             Cursor="Hand"
+                            IsDefault="True"
                             Click="Replace_Click"/>
                 </StackPanel>
             </Grid>

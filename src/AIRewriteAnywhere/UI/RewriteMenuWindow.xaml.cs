@@ -155,17 +155,27 @@ public partial class RewriteMenuWindow : Window
 
     private bool _isClosing = false;
 
-    private void SafeClose()
+    public void SafeClose()
     {
         if (_isClosing) return;
         _isClosing = true;
         try
         {
-            this.Close();
+            Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    this.Close();
+                }
+                catch
+                {
+                    // Ignore any closing state exceptions
+                }
+            });
         }
         catch
         {
-            // Ignore any closing state exceptions
+            // Ignore dispatcher exceptions
         }
     }
 }

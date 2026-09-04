@@ -36,6 +36,23 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        _logger = new FileLogger();
+
+        try
+        {
+            var currentProc = System.Diagnostics.Process.GetCurrentProcess();
+            var existingProcs = System.Diagnostics.Process.GetProcessesByName(currentProc.ProcessName)
+                .Where(p => p.Id != currentProc.Id)
+                .ToList();
+            if (existingProcs.Count > 0)
+            {
+                _logger.LogWarning($"Another instance of {Constants.AppName} is already running (PID {existingProcs[0].Id}). Exiting duplicate.");
+                Shutdown();
+                return;
+            }
+        }
+        catch { }
+
         DispatcherUnhandledException += (s, args) =>
         {
             _logger?.LogError("Unhandled Dispatcher Exception caught and prevented from closing app", args.Exception);
@@ -105,6 +122,16 @@ public partial class App : Application
             _orchestrator.ShowRewriteMenuRequested += selection =>
             {
                 var menu = new RewriteMenuWindow();
+                Action closeHandler = () =>
+                {
+                    Dispatcher.InvokeAsync(() => menu.SafeClose());
+                };
+                _orchestrator.GenerationCompleted += closeHandler;
+                menu.Closed += (s, e) =>
+                {
+                    _orchestrator.GenerationCompleted -= closeHandler;
+                };
+
                 menu.RewriteRequested += async (sel, mode, custom, lang, ct) =>
                 {
                     return await _orchestrator.ExecuteRewriteAsync(sel, mode, custom, lang, ct);
