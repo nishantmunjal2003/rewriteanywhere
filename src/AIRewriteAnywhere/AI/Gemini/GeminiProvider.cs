@@ -75,8 +75,8 @@ public class GeminiProvider : IAIProvider
 
             var response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);
 
-            // If 404 (model unavailable), attempt fallback to gemini-flash-latest or gemini-3.6-flash
-            if (response.StatusCode == HttpStatusCode.NotFound && targetModel != "gemini-flash-latest")
+            // If 404 (model unavailable) or 503 (service overloaded), attempt fallback to gemini-flash-latest
+            if ((response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.ServiceUnavailable) && targetModel != "gemini-flash-latest")
             {
                 targetModel = "gemini-flash-latest";
                 response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);

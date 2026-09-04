@@ -36,6 +36,20 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        DispatcherUnhandledException += (s, args) =>
+        {
+            _logger?.LogError("Unhandled Dispatcher Exception caught and prevented from closing app", args.Exception);
+            args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            if (args.ExceptionObject is Exception ex)
+            {
+                _logger?.LogError("Unhandled AppDomain Exception", ex);
+            }
+        };
+
         try
         {
             // Initialize Core Infrastructure

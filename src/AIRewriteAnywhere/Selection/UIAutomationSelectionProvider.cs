@@ -32,7 +32,45 @@ public class UIAutomationSelectionProvider
             }
             catch { }
 
-            // 2. Check handle-based element
+            // 2. Check inner focused window from GUIThreadInfo (e.g. Word _WwG, Chrome render widget)
+            if (targetHwnd != IntPtr.Zero)
+            {
+                try
+                {
+                    var threadId = NativeMethods.GetWindowThreadProcessId(targetHwnd, out _);
+                    if (threadId != 0)
+                    {
+                        var guiInfo = new NativeMethods.GUITHREADINFO();
+                        guiInfo.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(guiInfo);
+                        if (NativeMethods.GetGUIThreadInfo(threadId, ref guiInfo) && guiInfo.hwndFocus != IntPtr.Zero && guiInfo.hwndFocus != targetHwnd)
+                        {
+                            var focusChild = AutomationElement.FromHandle(guiInfo.hwndFocus);
+                            if (focusChild != null) candidates.Add(focusChild);
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            // 3. Check element under mouse cursor (crucial for web browsers & rich editors when user selects with mouse)
+            try
+            {
+                if (NativeMethods.GetCursorPos(out var pt))
+                {
+                    var hwndUnderCursor = NativeMethods.WindowFromPoint(pt);
+                    if (hwndUnderCursor != IntPtr.Zero && hwndUnderCursor != targetHwnd)
+                    {
+                        var elFromHwnd = AutomationElement.FromHandle(hwndUnderCursor);
+                        if (elFromHwnd != null) candidates.Add(elFromHwnd);
+                    }
+
+                    var elFromPoint = AutomationElement.FromPoint(new System.Windows.Point(pt.X, pt.Y));
+                    if (elFromPoint != null) candidates.Add(elFromPoint);
+                }
+            }
+            catch { }
+
+            // 4. Check handle-based element
             if (targetHwnd != IntPtr.Zero)
             {
                 try

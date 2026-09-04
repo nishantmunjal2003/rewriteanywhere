@@ -11,7 +11,7 @@ public static class Constants
     public static class DefaultModels
     {
         public const string OpenAI = "gpt-4o-mini";
-        public const string Gemini = "gemini-3.6-flash";
+        public const string Gemini = "gemini-flash-latest";
         public const string Claude = "claude-3-5-haiku-20241022";
         public const string Mock = "mock-turbo";
     }
@@ -41,11 +41,11 @@ public static class Constants
 
     public static readonly string[] AvailableGeminiModels = new[]
     {
-        "gemini-3.6-flash",
         "gemini-flash-latest",
         "gemini-3.7-flash",
-        "gemini-3.8-flash",
+        "gemini-3.6-flash",
         "gemini-pro-latest",
+        "gemini-3.8-flash",
         "gemini-3.1-pro-preview",
         "gemini-2.5-flash"
     };

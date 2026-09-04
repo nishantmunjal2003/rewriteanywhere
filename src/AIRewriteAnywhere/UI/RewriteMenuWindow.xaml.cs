@@ -126,30 +126,46 @@ public partial class RewriteMenuWindow : Window
             _isProcessing = false;
             _cts?.Dispose();
             _cts = null;
-            this.Close();
+            SafeClose();
         }
     }
 
     private void CancelRewrite_Click(object sender, RoutedEventArgs e)
     {
         _cts?.Cancel();
-        this.Close();
+        SafeClose();
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         if (!_isProcessing)
         {
-            this.Close();
+            SafeClose();
         }
     }
 
     private void Window_Deactivated(object? sender, EventArgs e)
     {
-        // If not currently executing an AI call, clicking away should dismiss the menu
-        if (!_isProcessing)
+        // If not currently executing an AI call and not already closing, clicking away dismisses the menu
+        if (!_isProcessing && !_isClosing)
+        {
+            SafeClose();
+        }
+    }
+
+    private bool _isClosing = false;
+
+    private void SafeClose()
+    {
+        if (_isClosing) return;
+        _isClosing = true;
+        try
         {
             this.Close();
+        }
+        catch
+        {
+            // Ignore any closing state exceptions
         }
     }
 }
