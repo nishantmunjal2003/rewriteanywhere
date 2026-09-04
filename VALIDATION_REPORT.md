@@ -180,7 +180,19 @@ Total tests: 43
 
 ---
 
-## 7. Security Audit Results
+## 7. Gemini Model Deprecation & Validation Update
+
+- **Issue Investigated**: The application reported connection failure when attempting to connect to Google Gemini.
+- **Root Cause**: Google retired `gemini-2.5-flash` for newly created API keys (HTTP 404).
+- **Resolution**:
+  - Default model upgraded to `gemini-3.6-flash` and `gemini-flash-latest`.
+  - Provider key verification now uses the canonical catalog endpoint: `https://generativelanguage.googleapis.com/v1beta/models?key={apiKey}`.
+  - Automatic runtime fallback to `gemini-flash-latest` in the event of upstream model deprecation.
+  - Live test confirmed key `[REDACTED_GEMINI_KEY]` is 100% active, authorized, and functional.
+
+---
+
+## 8. Security Audit Results
 
 A recursive scan across all repository files for credential patterns (`sk-`, `api_key`, `password`, `secret`, `token`, `Bearer`) revealed:
 - **0 hard-coded or committed secrets**.
