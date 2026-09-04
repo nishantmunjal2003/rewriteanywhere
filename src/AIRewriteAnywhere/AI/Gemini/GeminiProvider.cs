@@ -33,21 +33,9 @@ public class GeminiProvider : IAIProvider
 
         try
         {
-            var targetModel = string.IsNullOrWhiteSpace(model) ? Constants.DefaultModels.Gemini : model;
-            var url = $"{BaseEndpoint}/{targetModel}:generateContent?key={apiKey.Trim()}";
-            var payload = new
-            {
-                contents = new object[]
-                {
-                    new { parts = new object[] { new { text = "ping" } } }
-                }
-            };
-
-            var json = JsonSerializer.Serialize(payload);
-            using var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+            // Validate key against the official Gemini models catalog endpoint
+            var url = $"{BaseEndpoint}?key={apiKey.Trim()}";
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             using var response = await _httpClient.SendAsync(request);
             return response.IsSuccessStatusCode;
@@ -69,6 +57,15 @@ public class GeminiProvider : IAIProvider
         }
 
         var targetModel = string.IsNullOrWhiteSpace(model) ? Constants.DefaultModels.Gemini : model;
+
+        // Auto-upgrade retired/deprecated models to latest available
+        if (targetModel.Equals("gemini-2.5-flash", StringComparison.OrdinalIgnoreCase) ||
+            targetModel.Equals("gemini-1.5-flash", StringComparison.OrdinalIgnoreCase) ||
+            targetModel.Equals("gemini-1.5-pro", StringComparison.OrdinalIgnoreCase))
+        {
+            targetModel = "gemini-3.6-flash";
+        }
+
         var sw = Stopwatch.StartNew();
 
         try
@@ -76,34 +73,15 @@ public class GeminiProvider : IAIProvider
             var systemPrompt = PromptBuilder.BuildSystemPrompt(request);
             var userMessage = PromptBuilder.BuildUserMessage(request.OriginalText);
 
-            var url = $"{BaseEndpoint}/{targetModel}:generateContent?key={apiKey.Trim()}";
+            var response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);
 
-            var payload = new
+            // If 404 (model unavailable), attempt fallback to gemini-flash-latest or gemini-3.6-flash
+            if (response.StatusCode == HttpStatusCode.NotFound && targetModel != "gemini-flash-latest")
             {
-                system_instruction = new
-                {
-                    parts = new object[] { new { text = systemPrompt } }
-                },
-                contents = new object[]
-                {
-                    new
-                    {
-                        parts = new object[] { new { text = userMessage } }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature = 0.3
-                }
-            };
+                targetModel = "gemini-flash-latest";
+                response = await SendGenerateContentAsync(targetModel, apiKey, systemPrompt, userMessage, cancellationToken);
+            }
 
-            var json = JsonSerializer.Serialize(payload);
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
-
-            using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
             sw.Stop();
 
             if (response.StatusCode == HttpStatusCode.Forbidden || response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
@@ -175,5 +153,37 @@ public class GeminiProvider : IAIProvider
             sw.Stop();
             return RewriteResponse.CreateFailure($"Unexpected error during rewrite: {ex.Message}", ProviderType.Gemini, targetModel, sw.Elapsed);
         }
+    }
+
+    private async Task<HttpResponseMessage> SendGenerateContentAsync(string model, string apiKey, string systemPrompt, string userMessage, CancellationToken ct)
+    {
+        var url = $"{BaseEndpoint}/{model}:generateContent?key={apiKey.Trim()}";
+
+        var payload = new
+        {
+            system_instruction = new
+            {
+                parts = new object[] { new { text = systemPrompt } }
+            },
+            contents = new object[]
+            {
+                new
+                {
+                    parts = new object[] { new { text = userMessage } }
+                }
+            },
+            generationConfig = new
+            {
+                temperature = 0.3
+            }
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        return await _httpClient.SendAsync(httpRequest, ct);
     }
 }

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using AIRewriteAnywhere.Common;
 using AIRewriteAnywhere.Models;
 
 namespace AIRewriteAnywhere.Settings;
@@ -61,6 +62,13 @@ public class SettingsService : ISettingsService
 
             var loaded = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
             _settings = loaded ?? new AppSettings();
+
+            // Auto-migrate retired Gemini models to current active model
+            if (_settings.GeminiModel == "gemini-2.5-flash" || _settings.GeminiModel == "gemini-1.5-flash" || string.IsNullOrWhiteSpace(_settings.GeminiModel))
+            {
+                _settings.GeminiModel = Constants.DefaultModels.Gemini;
+            }
+
             SettingsChanged?.Invoke(this, _settings);
         }
         catch
