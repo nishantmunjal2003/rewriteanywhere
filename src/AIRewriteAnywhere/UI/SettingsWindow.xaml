@@ -1,0 +1,379 @@
+<Window x:Class="AIRewriteAnywhere.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings — AI Rewrite Anywhere"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Width="780"
+        Height="540"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <Style x:Key="TabNavButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Margin="0,2">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1F2937"/>
+                                <Setter Property="Foreground" Value="#F3F4F6"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2563EB"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E5E7EB"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="SubLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#111827"
+            BorderBrush="#374151"
+            BorderThickness="1"
+            CornerRadius="14"
+            Margin="10"
+            SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar Navigation -->
+            <Border Grid.Column="0"
+                    Background="#0F172A"
+                    BorderBrush="#1F2937"
+                    BorderThickness="0,0,1,0"
+                    CornerRadius="14,0,0,14"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- App Header -->
+                    <StackPanel Grid.Row="0" Margin="4,4,4,20">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✨" FontSize="20" Foreground="#A78BFA" Margin="0,0,8,0"/>
+                            <TextBlock Text="AI Rewrite" FontSize="16" FontWeight="Bold" Foreground="#F9FAFB"/>
+                        </StackPanel>
+                        <TextBlock Text="Settings &amp; Preferences" FontSize="11" Foreground="#6B7280" Margin="28,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Nav Buttons -->
+                    <StackPanel Grid.Row="1">
+                        <RadioButton x:Name="TabGeneral" Content="⚙  General" Style="{StaticResource TabNavButtonStyle}" IsChecked="True" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabAiProvider" Content="🤖  AI Provider &amp; Keys" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabWritingStyle" Content="✍  My Writing Style" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabAppearance" Content="🎨  Appearance" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabPrivacy" Content="🔒  Privacy &amp; Security" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabAbout" Content="ℹ  About" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                    </StackPanel>
+
+                    <!-- Save / Close -->
+                    <StackPanel Grid.Row="2" Margin="0,16,0,0">
+                        <Button Content="Save &amp; Close"
+                                Background="#7C3AED"
+                                Foreground="#FFFFFF"
+                                BorderThickness="0"
+                                Padding="12,8"
+                                FontWeight="SemiBold"
+                                FontSize="13"
+                                Cursor="Hand"
+                                Click="SaveAndClose_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Panels -->
+            <Grid Grid.Column="1" Margin="24,20,24,20">
+                <!-- Close Button in Top Right -->
+                <Button Content="✕"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#6B7280"
+                        FontSize="14"
+                        Cursor="Hand"
+                        Click="CloseWindow_Click"
+                        Panel.ZIndex="10"/>
+
+                <!-- 1. GENERAL TAB -->
+                <ScrollViewer x:Name="PanelGeneral" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="General Settings" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,16"/>
+
+                        <!-- Start with Windows -->
+                        <CheckBox x:Name="ChkStartWithWindows" Margin="0,6,0,12" VerticalContentAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="Start AI Rewrite Anywhere with Windows" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Launches minimized to system tray on login." Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <!-- Floating Button Toggle -->
+                        <CheckBox x:Name="ChkShowFloatingButton" Margin="0,6,0,12" VerticalContentAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="Show Floating AI Button (✨) near selections" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Displays an unobtrusive button when text is selected." Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <!-- Button Size -->
+                        <Grid Margin="24,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Floating Button Size:" Style="{StaticResource ModernLabelStyle}"/>
+                            <ComboBox x:Name="ComboButtonSize" Grid.Column="1" Height="28"/>
+                        </Grid>
+
+                        <!-- Global Shortcut -->
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,4,0,14">
+                            <StackPanel>
+                                <TextBlock Text="Global Keyboard Shortcut" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="Trigger rewrite anywhere even when floating button is hidden." Style="{StaticResource SubLabelStyle}" Margin="0,2,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox x:Name="ChkModCtrl" Content="Ctrl" Foreground="#E5E7EB" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="ChkModShift" Content="Shift" Grid.Column="1" Foreground="#E5E7EB" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="ChkModAlt" Content="Alt" Grid.Column="2" Foreground="#E5E7EB" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <ComboBox x:Name="ComboShortcutKey" Grid.Column="3" Height="26"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Preview Mode -->
+                        <CheckBox x:Name="ChkPreviewBeforeReplace" Margin="0,6,0,12" VerticalContentAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="Preview before replacing text" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Shows original vs rewritten comparison dialog before pasting. (Default: OFF)" Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <!-- Clipboard Preservation -->
+                        <CheckBox x:Name="ChkRestoreClipboard" Margin="0,6,0,12" VerticalContentAlignment="Center" IsChecked="True">
+                            <StackPanel>
+                                <TextBlock Text="Preserve and restore clipboard contents" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Ensures your previously copied text or files remain safe." Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <!-- Notifications -->
+                        <CheckBox x:Name="ChkEnableNotifications" Margin="0,6,0,12" VerticalContentAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="Enable desktop notifications &amp; alerts" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Shows subtle notifications when text is replaced or errors occur." Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 2. AI PROVIDER TAB -->
+                <ScrollViewer x:Name="PanelAiProvider" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="AI Provider &amp; Credentials" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,6"/>
+                        <TextBlock Text="Configure your preferred AI provider using your own API key (BYOK)." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,16"/>
+
+                        <!-- Provider Selector -->
+                        <TextBlock Text="Active AI Provider" FontSize="12" FontWeight="SemiBold" Foreground="#D1D5DB" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboActiveProvider" Height="30" Margin="0,0,0,14" SelectionChanged="ComboActiveProvider_SelectionChanged"/>
+
+                        <!-- Model Selector -->
+                        <TextBlock Text="Model" FontSize="12" FontWeight="SemiBold" Foreground="#D1D5DB" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboModel" Height="30" Margin="0,0,0,16"/>
+
+                        <!-- API Key -->
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,16">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock Text="API Key" FontSize="13" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                    <TextBlock x:Name="KeyStatusLabel" Text="[No Key Configured]" FontSize="11" Foreground="#F59E0B" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <TextBlock Text="Your key is securely encrypted on this PC with Windows DPAPI." Style="{StaticResource SubLabelStyle}" Margin="0,2,0,10"/>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <PasswordBox x:Name="KeyPasswordBox" Height="30" FontSize="13" Background="#111827" Foreground="#FFFFFF" BorderBrush="#374151"/>
+                                    <TextBox x:Name="KeyPlainTextBox" Height="30" FontSize="13" Background="#111827" Foreground="#FFFFFF" BorderBrush="#374151" Visibility="Collapsed"/>
+                                    <Button x:Name="ToggleKeyVisibilityBtn" Grid.Column="1" Content="👁" Width="32" Height="30" Margin="6,0,0,0" Background="#374151" Foreground="#FFFFFF" BorderThickness="0" Click="ToggleKeyVisibility_Click"/>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Save Key" Background="#2563EB" Foreground="#FFFFFF" BorderThickness="0" Padding="14,6" Margin="0,0,10,0" Cursor="Hand" Click="SaveKey_Click"/>
+                                    <Button Content="Clear Key" Background="#374151" Foreground="#E5E7EB" BorderThickness="0" Padding="14,6" Margin="0,0,10,0" Cursor="Hand" Click="ClearKey_Click"/>
+                                    <Button Content="Test Connection" Background="#10B981" Foreground="#FFFFFF" BorderThickness="0" Padding="14,6" Cursor="Hand" Click="TestConnection_Click"/>
+                                </StackPanel>
+
+                                <TextBlock x:Name="TestConnectionStatusText" Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 3. WRITING STYLE TAB -->
+                <ScrollViewer x:Name="PanelWritingStyle" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="My Writing Style" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,6"/>
+                        <TextBlock Text="Personalize your default rewrite tone, formality, and custom instructions." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,16"/>
+
+                        <CheckBox x:Name="ChkEnableWritingStyle" Margin="0,0,0,14">
+                            <TextBlock Text="Enable My Writing Style Profile across all rewrites" Style="{StaticResource ModernLabelStyle}"/>
+                        </CheckBox>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Preferred Tone:" Style="{StaticResource ModernLabelStyle}"/>
+                            <ComboBox x:Name="ComboTone" Grid.Column="1" Height="28"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Length Preference:" Style="{StaticResource ModernLabelStyle}"/>
+                            <ComboBox x:Name="ComboLength" Grid.Column="1" Height="28"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Formality Level:" Style="{StaticResource ModernLabelStyle}"/>
+                            <ComboBox x:Name="ComboFormality" Grid.Column="1" Height="28"/>
+                        </Grid>
+
+                        <CheckBox x:Name="ChkPreserveTechnicalTerms" Margin="0,6,0,14" IsChecked="True">
+                            <TextBlock Text="Strictly preserve specialized technical terms, acronyms, and formulas" Style="{StaticResource ModernLabelStyle}"/>
+                        </CheckBox>
+
+                        <TextBlock Text="Additional Style Guidelines:" Style="{StaticResource ModernLabelStyle}" Margin="0,0,0,6"/>
+                        <TextBox x:Name="TxtAdditionalInstructions"
+                                 Height="80"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Background="#1F2937"
+                                 Foreground="#F3F4F6"
+                                 BorderBrush="#374151"
+                                 Padding="8"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 4. APPEARANCE TAB -->
+                <ScrollViewer x:Name="PanelAppearance" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Appearance &amp; Theme" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,16"/>
+                        <TextBlock Text="Theme Preference" FontSize="12" FontWeight="SemiBold" Foreground="#D1D5DB" Margin="0,0,0,6"/>
+                        <ComboBox x:Name="ComboTheme" Height="30" Margin="0,0,0,14"/>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 5. PRIVACY TAB -->
+                <ScrollViewer x:Name="PanelPrivacy" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Privacy &amp; Security" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,14"/>
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="🔒 Direct Client-to-Provider Communication" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="AI Rewrite Anywhere communicates directly with your configured AI provider (OpenAI, Google Gemini, or Anthropic Claude). Your text is NEVER transmitted to any intermediate third-party or developer server." Style="{StaticResource SubLabelStyle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="🛡 Windows DPAPI Credential Security" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="All API keys are encrypted at rest using the Windows Data Protection API (DPAPI) bound exclusively to your user account. Keys are never logged or stored in plaintext." Style="{StaticResource SubLabelStyle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="📋 Strict Clipboard &amp; Text Hygiene" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="The app only accesses selected text when you invoke a rewrite. Your existing clipboard contents are faithfully backed up and restored. User text is never recorded in diagnostic logs." Style="{StaticResource SubLabelStyle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 6. ABOUT TAB -->
+                <ScrollViewer x:Name="PanelAbout" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="✨" FontSize="32" Foreground="#A78BFA" Margin="0,0,12,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="AI Rewrite Anywhere" FontSize="20" FontWeight="Bold" Foreground="#F9FAFB"/>
+                                <TextBlock Text="Version 0.1.0 — Windows Native Desktop Edition" FontSize="12" Foreground="#9CA3AF"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <TextBlock Text="Select text anywhere in Windows → rewrite with AI → automatic in-place replacement."
+                                   Foreground="#D1D5DB"
+                                   FontSize="13"
+                                   Margin="0,0,0,16"/>
+
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="Important Billing Notice" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="This application uses the user's own AI provider API key. AI provider usage charges are billed by the respective provider."
+                                           Style="{StaticResource SubLabelStyle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

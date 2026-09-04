@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AIRewriteAnywhere/AIRewriteAnywhere.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AIRewriteAnywhere.Tests/AIRewriteAnywhere.Tests.csproj" />
+  </Folder>
+</Solution>

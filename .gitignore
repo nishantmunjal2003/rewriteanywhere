@@ -1,0 +1,26 @@
+## Visual Studio / .NET
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+
+## Build Artifacts & Packages
+*.nupkg
+*.snupkg
+packages/
+
+## Inno Setup Output (keep output directory clean if desired, or exclude temp)
+installer/Output/
+
+## Secrets (Never commit secrets)
+*.dat
+*.key
+*.pem
+*.pfx
+credentials.json
+.env
