@@ -1,4 +1,4 @@
-# WriteAnywhere (AI Rewrite Anywhere) ✍️✨
+# AI Rewrite Anywhere (`rewriteanywhere`) ✍️✨
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-blue.svg)](https://microsoft.com/windows)
@@ -8,7 +8,7 @@
 
 > **Select text anywhere across Windows → Click ✨ or press `Ctrl + Shift + R` → Instant AI Rewrite & In-Place Replacement.**
 
-**WriteAnywhere** is a lightweight, ultra-responsive Windows desktop utility that integrates state-of-the-art AI rewriting natively into any application across your entire OS. Eliminate the tedious cycle of copying text, switching windows to a browser, waiting on a web chat prompt, copying the result, and pasting it back.
+**AI Rewrite Anywhere** (`rewriteanywhere`) is a lightweight, ultra-responsive Windows desktop utility that integrates state-of-the-art AI rewriting natively into any application across your entire OS. Eliminate the tedious cycle of copying text, switching windows to a browser, waiting on a web chat prompt, copying the result, and pasting it back.
 
 ---
 
@@ -129,8 +129,8 @@ dist\AIRewriteAnywhere.exe
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/nishantmunjal2003/writeanywhere.git
-cd writeanywhere
+git clone https://github.com/nishantmunjal2003/rewriteanywhere.git
+cd rewriteanywhere
 
 # 2. Restore NuGet dependencies
 dotnet restore
