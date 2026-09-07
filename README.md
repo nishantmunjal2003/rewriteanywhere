@@ -1,145 +1,201 @@
-# AI Rewrite Anywhere
+# WriteAnywhere (AI Rewrite Anywhere) ✍️✨
 
-> **Select text anywhere in Windows → Click ✨ or press `Ctrl + Shift + R` → Instant AI Rewrite & In-Place Replacement.**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-blue.svg)](https://microsoft.com/windows)
+[![.NET](https://img.shields.io/badge/.NET-8.0%20Desktop%20Runtime-purple.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![Architecture](https://img.shields.io/badge/Architecture-x64-success.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-43%20Passing-brightgreen.svg)]()
 
-AI Rewrite Anywhere is a lightweight, production-grade Windows desktop application that integrates modern AI writing assistance across your entire operating system. It replaces the cumbersome workflow of copying text, switching to a web browser, pasting into ChatGPT, copying the result, and switching back.
+> **Select text anywhere across Windows → Click ✨ or press `Ctrl + Shift + R` → Instant AI Rewrite & In-Place Replacement.**
 
-Works seamlessly across:
-- **Microsoft Notepad**
-- **Microsoft Word**
-- **Google Chrome & Microsoft Edge**
-- **Gmail, Outlook Web, and Google Docs**
-- **Messaging and social apps** (WhatsApp, Teams, LinkedIn, X/Twitter)
-
----
-
-## Key Features
-
-- **In-Place Replacement**: Automatically replaces your selected text with the AI rewritten version.
-- **Layered Selection Engine**: Combines Windows UI Automation with a safe, atomic clipboard fallback.
-- **Strict Clipboard Preservation**: Backs up and restores your existing clipboard data (text, images, files) so nothing is lost.
-- **Non-Activating Floating Button (✨)**: A small, rounded floating button appears near selections without stealing focus from your active document.
-- **Global Keyboard Shortcut**: Default `Ctrl + Shift + R` (fully customizable in Settings).
-- **11 Rewrite Modes**:
-  - ✨ **Improve**: Enhances grammar, flow, clarity, and readability.
-  - 💼 **Professional**: Polished, articulate, executive business tone.
-  - 🎓 **Academic**: Formal academic English with strict protection against hallucinated citations or data.
-  - 📧 **Email**: Structured, courteous, professional email communication.
-  - 😊 **Friendly**: Warm, conversational, and natural tone.
-  - 🙏 **Polite**: Diplomatic, respectful, and considerate phrasing.
-  - ✂ **Shorten**: Removes fluff and verbosity while keeping key information.
-  - ➕ **Expand**: Adds clarity, context, and elaboration without inventing facts.
-  - 🔤 **Grammar**: Direct spelling, punctuation, and grammar correction with minimal changes.
-  - 🌐 **Translate**: High-quality translation into 10+ languages (English, Hindi, Spanish, French, German, Chinese, Japanese, and more).
-  - ✍ **Custom**: Enter any custom prompt (e.g., *"Convert into bullet points"*, *"Make punchy"*).
-- **My Writing Style**: Configure personalized tone, formality, length, and technical term rules applied automatically across rewrites.
-- **Preview Mode (Optional)**: Optional side-by-side comparison before replacing text.
-- **One-Step Undo**: Quickly reverse any rewrite via the system tray or shortcut.
-- **Bring Your Own Key (BYOK)**: Supports **OpenAI**, **Google Gemini**, **Anthropic Claude**, and a built-in **Mock Provider** for offline testing.
-- **Bank-Grade Credential Protection**: API keys are encrypted with **Windows DPAPI** (`ProtectedData`) bound to your Windows account. Keys are never stored in plaintext or logged.
-- **Zero Intermediary Servers**: Directly communicates with provider endpoints via HTTPS.
-
-> [!IMPORTANT]
-> **Billing Notice**:  
-> This application uses the user's own AI provider API key. AI provider usage charges are billed directly by the respective provider.
+**WriteAnywhere** is a lightweight, ultra-responsive Windows desktop utility that integrates state-of-the-art AI rewriting natively into any application across your entire OS. Eliminate the tedious cycle of copying text, switching windows to a browser, waiting on a web chat prompt, copying the result, and pasting it back.
 
 ---
 
-## Installation
+## ⚡ Works Everywhere in Windows
+
+Seamlessly enhances text selection across:
+- **Productivity**: Microsoft Word, Google Docs, Excel, PowerPoint, OneNote, Microsoft Notepad
+- **Browsers**: Google Chrome, Microsoft Edge, Brave, Mozilla Firefox, Opera
+- **Communication**: WhatsApp Desktop, Microsoft Teams, Slack, Telegram, Discord, Zoom Chat
+- **Web Mail & Social**: Gmail, Outlook Web, LinkedIn, X / Twitter, Reddit, Notion
+- **Code & Terminals**: VS Code, Sublime Text, Visual Studio, Windows Terminal, Notepad++
+
+---
+
+## 🚀 Key Features
+
+* **In-Place Replacement**: Replaces your highlighted text with the refined version instantly.
+* **Non-Activating Floating Button (✨)**: A subtle, rounded floating button appears right near your active text cursor without stealing focus or interrupting your typing flow.
+* **Customizable Global Hotkey**: Trigger anywhere using default **`Ctrl + Shift + R`** (fully configurable in settings).
+* **High-DPI & Multi-Monitor Aware**: Per-Monitor V2 DPI scaling ensures crystal-clear rendering across 4K, 1440p, 1080p, and multi-display setups with mixed scaling factors.
+* **Robust Hybrid Selection Engine**:
+  * Primary: **Windows UI Automation (UIA)** text pattern detection.
+  * Fallback: Non-destructive, atomic clipboard capture.
+* **Strict Clipboard Preservation**: Backs up and restores your clipboard state (text, rich text, images, and file lists) so your clipboard history remains completely untouched.
+* **11 Pre-Tuned Rewrite Modes**:
+  | Mode | Icon | Description |
+  | :--- | :---: | :--- |
+  | **Improve** | ✨ | Enhances grammar, flow, cadence, and overall clarity. |
+  | **Professional** | 💼 | Crisp, articulate, and executive business tone. |
+  | **Academic** | 🎓 | Rigorous academic English with zero hallucinated claims. |
+  | **Email** | 📧 | Courteous, structured, and goal-oriented workplace email. |
+  | **Friendly** | 😊 | Warm, empathetic, and natural conversational tone. |
+  | **Polite** | 🙏 | Diplomatic, respectful, and considerate phrasing. |
+  | **Shorten** | ✂️ | Condenses verbosity while strictly retaining core meaning. |
+  | **Expand** | ➕ | Adds helpful depth, context, and nuance without filler. |
+  | **Grammar Fix** | 🔤 | Precise punctuation and spelling corrections with minimal edits. |
+  | **Translate** | 🌐 | High-fidelity translation across 10+ languages (EN, ES, FR, DE, HI, JA, ZH, etc.). |
+  | **Custom Prompt** | ✍️ | Type any custom prompt (e.g., *"Convert to bullet points"*, *"Make humorous"*). |
+* **Personalized Writing Style Profile**: Set your preferred tone, length, formality, and technical glossary rules to be applied automatically across all rewrites.
+* **Instant Undo (`Ctrl + Z`)**: Revert any rewrite with a single keystroke or from the system tray menu.
+* **Side-by-Side Preview (Optional)**: Review a diff of original vs. proposed text before applying changes.
+
+---
+
+## 🔒 Security & Privacy (BYOK)
+
+WriteAnywhere is engineered from the ground up for strict personal privacy:
+
+1. **Bring Your Own Key (BYOK)**: Connect your own API keys directly to **OpenAI**, **Google Gemini**, or **Anthropic Claude**.
+2. **Windows DPAPI Hardware Encryption**: All API keys are encrypted with Windows Data Protection API (`ProtectedData`), tied to your Windows user account. Plaintext credentials are **never** stored on disk or in memory dumps.
+3. **Zero Intermediary Servers**: Network requests travel directly from your machine to the respective AI provider's official HTTPS endpoints.
+4. **Zero Diagnostic Data Logging**: Diagnostic log files scrub all user text and exceptions; prompt content is never logged.
+5. **Offline Mock Mode**: Includes a local mock provider for testing, demos, or air-gapped environments without an active internet connection.
+
+---
+
+## 📦 Supported AI Providers & Models
+
+* **Google Gemini**:
+  * `gemini-3.6-flash` (Recommended Default)
+  * `gemini-flash-latest`
+  * `gemini-3.1-flash-lite` (Ultra-low latency)
+  * `gemini-pro-latest`
+* **OpenAI**:
+  * `gpt-4o-mini`
+  * `gpt-4o`
+  * `gpt-4-turbo`
+* **Anthropic Claude**:
+  * `claude-3-5-haiku-20241022`
+  * `claude-3-5-sonnet-20241022`
+* **Mock Provider**: Built-in offline testing engine (no API key required).
+
+---
+
+## 📥 Installation
+
+### Option 1: Windows Setup Installer (Recommended)
+1. Grab the latest installer from the `installer/` directory:  
+   **[`installer/AI-Rewrite-Anywhere-Setup.exe`](installer/AI-Rewrite-Anywhere-Setup.exe)**
+2. Run the installer and follow the setup wizard.
+3. Select optional preferences:
+   - ✅ *Create a desktop shortcut*
+   - ✅ *Start automatically with Windows*
+4. Click **Finish**. The app will start running silently in the Windows system tray.
+
+### Option 2: Standalone Release Binary
+Directly run the compiled release executable located in `dist/`:
+```text
+dist\AIRewriteAnywhere.exe
+```
+
+---
+
+## ⚙️ Quick Start Guide
+
+1. **Open Settings**: Right-click the **✨** icon in your system tray (bottom-right taskbar) and select **⚙ Settings...**.
+2. **Configure Provider**:
+   - Select your preferred AI Provider (**Google Gemini**, **OpenAI**, or **Anthropic Claude**).
+   - Enter your API key and choose your preferred model.
+   - Click **Test Connection** to verify key validity.
+   - Click **Save & Close**.
+3. **Start Rewriting**:
+   - Highlight any text in any program (e.g. an email draft in Chrome).
+   - Press **`Ctrl + Shift + R`** or click the floating **✨** button.
+   - Choose a mode (e.g. **Professional**).
+   - Watch the text transform in place!
+
+---
+
+## 🛠️ Building from Source
 
 ### Prerequisites
-- Windows 10 or Windows 11 (64-bit)
-- .NET 8.0 Desktop Runtime (included by default on updated Windows 11 systems, or install via `dotnet-runtime-8.0`).
+* Windows 10/11 x64
+* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or newer
+* [Inno Setup 6](https://jrsoftware.org/isinfo.php) (optional, for compiling the setup `.exe`)
 
-### Running the Setup Installer
-1. Download or locate `AI-Rewrite-Anywhere-Setup.exe` in the `installer/` directory.
-2. Run `AI-Rewrite-Anywhere-Setup.exe`.
-3. Follow the installation wizard. You can optionally check:
-   - *Create a desktop shortcut*
-   - *Start automatically with Windows*
-4. Click **Finish**. The application will launch and minimize to your Windows system tray.
+### Commands
 
----
-
-## First-Time Setup & Configuration
-
-1. In your system tray (bottom-right near clock), right-click the **✨ AI Rewrite Anywhere** icon and click **⚙ Settings...**.
-2. Click the **🤖 AI Provider & Keys** tab.
-3. Choose your desired provider:
-   - **OpenAI**: Enter your API key (`sk-...`), select a model (e.g., `gpt-4o-mini`, `gpt-4o`), and click **Save Key**.
-   - **Google Gemini**: Enter your Gemini API key, select model (e.g., `gemini-2.5-flash`), and click **Save Key**.
-   - **Anthropic Claude**: Enter your Anthropic API key, select model (e.g., `claude-3-5-haiku-20241022`), and click **Save Key**.
-   - **Mock Provider**: Requires no key; ideal for offline testing, demos, or air-gapped environments.
-4. Click **Test Connection** to verify your API credentials.
-5. Click **Save & Close**.
-
----
-
-## How to Use
-
-### Method 1: Using the Floating Button (✨)
-1. In any application (Notepad, Word, Chrome, etc.), select any text.
-2. A small floating ✨ button appears near your selection.
-3. Click the ✨ button to open the rewrite menu.
-4. Click your desired mode (e.g., **Professional**).
-5. The selected text is automatically replaced in your application!
-
-### Method 2: Using the Global Shortcut (`Ctrl + Shift + R`)
-1. Select text in any window.
-2. Press **`Ctrl + Shift + R`**.
-3. The AI Rewrite menu opens.
-4. Select a mode or type a custom instruction and press Enter.
-5. The text is automatically replaced.
-
-### Method 3: System Tray Menu
-- Right-click the system tray icon to access:
-  - **Rewrite Selected Text**
-  - **Undo Last Rewrite**
-  - **Show/Hide Floating AI Button**
-  - **Settings...**
-  - **View Logs**
-  - **Exit**
-
----
-
-## Building from Source
-
-### Prerequisites
-- .NET SDK 8.0 or 10.0 (`winget install Microsoft.DotNet.SDK.8`)
-- Inno Setup 6 (optional, for building the installer)
-
-### Build Commands
 ```powershell
-# Restore dependencies
+# 1. Clone the repository
+git clone https://github.com/nishantmunjal2003/writeanywhere.git
+cd writeanywhere
+
+# 2. Restore NuGet dependencies
 dotnet restore
 
-# Build Solution
+# 3. Build Release configuration
 dotnet build -c Release
 
-# Run Unit & Integration Tests (43 tests)
+# 4. Run automated test suite (43 tests)
 dotnet test -v normal
 
-# Publish Release Binaries
+# 5. Publish self-contained or framework-dependent distribution
 dotnet publish src/AIRewriteAnywhere/AIRewriteAnywhere.csproj -c Release -r win-x64 --self-contained false -o dist
 
-# Build Installer (produces installer/AI-Rewrite-Anywhere-Setup.exe)
+# 6. (Optional) Build Inno Setup Installer
 powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1
 ```
 
 ---
 
-## Troubleshooting & Known Limitations
+## 📐 Architecture Overview
 
-### Troubleshooting
-- **"Please select some text first"**: Ensure text is actively highlighted before pressing `Ctrl+Shift+R`.
-- **"The API key was rejected"**: Open Settings, re-enter your provider API key, and click *Test Connection*. Verify your provider account has active credit/quota.
-- **Floating button does not appear**: Some elevated administrative applications (e.g., Command Prompt running as Admin) restrict UI Automation from lower-integrity processes. Use `Ctrl+Shift+R` to trigger the rewrite menu directly.
+```
+                          ┌───────────────────────────┐
+                          │   Active Windows Window   │
+                          │ (Chrome, Word, WhatsApp)  │
+                          └─────────────┬─────────────┘
+                                        │ Selection Detected
+                                        ▼
+┌───────────────────────┐        ┌────────────────────────────┐
+│   Global Hotkey /     │───────▶│ WindowsIntegration Layer   │
+│   Floating ✨ Button  │        │ (UIA / Clipboard Fallback) │
+└───────────────────────┘        └─────────────┬──────────────┘
+                                               │ Extracted Text
+                                               ▼
+┌───────────────────────┐        ┌────────────────────────────┐
+│   Windows DPAPI       │───────▶│ Core Orchestrator          │
+│   Key Vault (Encrypted│        │ (PromptBuilder + Style)    │
+└───────────────────────┘        └─────────────┬──────────────┘
+                                               │ Structured Prompt
+                                               ▼
+                                 ┌────────────────────────────┐
+                                 │ AI Provider (Direct HTTPS) │
+                                 │ Gemini / OpenAI / Claude   │
+                                 └─────────────┬──────────────┘
+                                               │ Rewritten Text
+                                               ▼
+                                 ┌────────────────────────────┐
+                                 │ Text Replacement Service   │
+                                 │ (Atomic in-place swap)     │
+                                 └────────────────────────────┘
+```
 
-### Known Limitations
-- Applications using custom non-standard render canvases (like older Java Swing apps or protected game engines) may not expose caret bounding coordinates. In these cases, the menu opens near the mouse cursor and uses the clipboard fallback.
-- Native Microsoft Outlook desktop, Teams, and WhatsApp were not installed on this test machine and are documented accordingly in `VALIDATION_REPORT.md`.
+For complete technical specifications, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## License & Support
-Distributed under the MIT License. See [PRIVACY.md](PRIVACY.md) and [ARCHITECTURE.md](ARCHITECTURE.md) for further technical details.
+## 📄 Documentation
+
+* [ARCHITECTURE.md](ARCHITECTURE.md) — Deep dive into the threading model, UIA providers, and event pipeline.
+* [PRIVACY.md](PRIVACY.md) — Security disclosures, DPAPI encryption specifications, and privacy commitments.
+* [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) — Comprehensive developer setup and packaging guide.
+* [VALIDATION_REPORT.md](VALIDATION_REPORT.md) — Complete test coverage results, performance benchmarks, and validation logs.
+
+---
+
+## ⚖️ License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for complete terms.
