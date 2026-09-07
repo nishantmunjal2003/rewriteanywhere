@@ -75,6 +75,22 @@ Rules:
                 var custom = string.IsNullOrWhiteSpace(request.CustomInstruction) ? "Improve clarity and style." : request.CustomInstruction;
                 sb.AppendLine($"Follow this user-specified instruction: {custom}");
                 break;
+
+            case RewriteMode.LinkedIn:
+                sb.AppendLine("Rewrite as an engaging, high-impact LinkedIn post. Format with an attention-grabbing opening hook, clean line breaks and spacing for readability, a professional thought-leadership tone, practical insights or takeaways, an engaging closing call-to-action (CTA) to spark comments, and 3-5 relevant hashtags at the end.");
+                break;
+
+            case RewriteMode.Twitter:
+                sb.AppendLine("Rewrite as a punchy, engaging X/Twitter post. Keep it strictly under 280 characters if possible (or a cohesive single post), with an irresistible opening hook, concise and impactful wording, high engagement potential, and 1-2 relevant hashtags.");
+                break;
+
+            case RewriteMode.Facebook:
+                sb.AppendLine("Rewrite as an authentic, engaging Facebook post. Use a friendly, conversational, and relatable tone that resonates with a community audience. Include natural narrative flow, clean spacing, and an open-ended question or discussion prompt to encourage comments and shares.");
+                break;
+
+            case RewriteMode.Instagram:
+                sb.AppendLine("Rewrite as a captivating Instagram post caption. Start with a compelling first line hook before the fold, use clean line breaks and tasteful emojis for visual pacing, include a clear call-to-action (e.g. asking followers their thoughts or directing to bio), and place 5-8 relevant, targeted hashtags at the bottom.");
+                break;
         }
 
         // Incorporate Writing Style Profile if enabled

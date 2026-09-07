@@ -98,6 +98,7 @@ public partial class SettingsWindow : Window
         ChkPreviewBeforeReplace.IsChecked = s.PreviewBeforeReplace;
         ChkRestoreClipboard.IsChecked = s.RestoreClipboard;
         ChkEnableNotifications.IsChecked = s.EnableNotifications;
+        ChkEnablePowerEfficiency.IsChecked = s.EnablePowerEfficiency;
 
         ComboActiveProvider.SelectedItem = s.ActiveProvider;
         UpdateModelDropdownForProvider(s.ActiveProvider);
@@ -306,6 +307,7 @@ public partial class SettingsWindow : Window
         s.PreviewBeforeReplace = ChkPreviewBeforeReplace.IsChecked == true;
         s.RestoreClipboard = ChkRestoreClipboard.IsChecked == true;
         s.EnableNotifications = ChkEnableNotifications.IsChecked == true;
+        s.EnablePowerEfficiency = ChkEnablePowerEfficiency.IsChecked == true;
 
         if (ComboActiveProvider.SelectedItem is ProviderType prov)
             s.ActiveProvider = prov;
@@ -340,6 +342,16 @@ public partial class SettingsWindow : Window
 
         await _settingsService.SaveAsync();
         this.Close();
+    }
+
+    private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
+        }
+        catch { }
     }
 
     private void CloseWindow_Click(object sender, RoutedEventArgs e)

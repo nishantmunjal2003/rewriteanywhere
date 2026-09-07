@@ -12,7 +12,11 @@ public enum RewriteMode
     Expand,
     Grammar,
     Translate,
-    Custom
+    Custom,
+    LinkedIn,
+    Twitter,
+    Facebook,
+    Instagram
 }
 
 public enum ProviderType

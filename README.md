@@ -33,7 +33,8 @@ Seamlessly enhances text selection across:
   * Primary: **Windows UI Automation (UIA)** text pattern detection.
   * Fallback: Non-destructive, atomic clipboard capture.
 * **Strict Clipboard Preservation**: Backs up and restores your clipboard state (text, rich text, images, and file lists) so your clipboard history remains completely untouched.
-* **11 Pre-Tuned Rewrite Modes**:
+* **Strict Clipboard Preservation**: Backs up and restores your clipboard state (text, rich text, images, and file lists) so your clipboard history remains completely untouched.
+* **15 Pre-Tuned Rewrite Modes**:
   | Mode | Icon | Description |
   | :--- | :---: | :--- |
   | **Improve** | ✨ | Enhances grammar, flow, cadence, and overall clarity. |
@@ -47,6 +48,11 @@ Seamlessly enhances text selection across:
   | **Grammar Fix** | 🔤 | Precise punctuation and spelling corrections with minimal edits. |
   | **Translate** | 🌐 | High-fidelity translation across 10+ languages (EN, ES, FR, DE, HI, JA, ZH, etc.). |
   | **Custom Prompt** | ✍️ | Type any custom prompt (e.g., *"Convert to bullet points"*, *"Make humorous"*). |
+  | **LinkedIn Post** | 💼 | Thought leadership format with strong opening hook, clean spacing, takeaways, and 3-5 hashtags. |
+  | **X / Twitter Post** | 🐦 | Punchy, ultra-concise hook under 280 characters with high viral engagement. |
+  | **Facebook Post** | 👥 | Warm, community-friendly conversational tone with an open-ended discussion question. |
+  | **Instagram Caption** | 📸 | Captivating above-the-fold hook, aesthetic line breaks, pacing emojis, and targeted hashtags. |
+* **Intelligent Power Efficiency**: Adaptive background polling with Win32 `GetLastInputInfo` idle gating, zero per-tick allocations, and laptop battery awareness ensuring ~0.0% idle CPU utilization.
 * **Personalized Writing Style Profile**: Set your preferred tone, length, formality, and technical glossary rules to be applied automatically across all rewrites.
 * **Instant Undo (`Ctrl + Z`)**: Revert any rewrite with a single keystroke or from the system tray menu.
 * **Side-by-Side Preview (Optional)**: Review a diff of original vs. proposed text before applying changes.
@@ -193,6 +199,13 @@ For complete technical specifications, see [ARCHITECTURE.md](ARCHITECTURE.md).
 * [PRIVACY.md](PRIVACY.md) — Security disclosures, DPAPI encryption specifications, and privacy commitments.
 * [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) — Comprehensive developer setup and packaging guide.
 * [VALIDATION_REPORT.md](VALIDATION_REPORT.md) — Complete test coverage results, performance benchmarks, and validation logs.
+
+---
+
+## 🔬 Research & Development Team
+
+* **Lead Creator**: [Dr. Nishant Munjal](https://nishantmunjal.com)
+* **Research Laboratory**: [NMRIL Labs](https://nishantmunjal.com/nmril)
 
 ---
 

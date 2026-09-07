@@ -106,7 +106,7 @@ public partial class RewriteMenuWindow : Window
         }
     }
 
-    private async void CustomInstructionText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void CustomInstructionText_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {

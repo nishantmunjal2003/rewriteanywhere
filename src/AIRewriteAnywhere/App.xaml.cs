@@ -137,7 +137,8 @@ public partial class App : Application
             // Setup Selection Watcher
             _selectionWatcher = new SelectionWatcher(_selectionService, _logger)
             {
-                IsEnabled = _settingsService.Settings.ShowFloatingButton
+                IsEnabled = _settingsService.Settings.ShowFloatingButton,
+                PowerEfficiencyEnabled = _settingsService.Settings.EnablePowerEfficiency
             };
             _selectionWatcher.SelectionDetected += sel =>
             {
@@ -223,6 +224,7 @@ public partial class App : Application
                 if (_selectionWatcher != null)
                 {
                     _selectionWatcher.IsEnabled = newSettings.ShowFloatingButton;
+                    _selectionWatcher.PowerEfficiencyEnabled = newSettings.EnablePowerEfficiency;
                 }
                 if (!newSettings.ShowFloatingButton)
                 {

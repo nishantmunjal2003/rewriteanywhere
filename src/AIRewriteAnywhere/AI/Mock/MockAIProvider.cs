@@ -96,6 +96,10 @@ public class MockAIProvider : IAIProvider
                     "german" => "Sehr geehrter Herr, morgen werde ich aus persönlichen Gründen nicht am Unterricht teilnehmen können. Bitte bewilligen Sie meine Abwesenheit.",
                     _ => "Dear Sir, I will be unable to attend class tomorrow due to personal obligations. Please grant me leave."
                 },
+                RewriteMode.LinkedIn => "Balancing commitments is key to long-term success. Due to personal obligations tomorrow, I will be stepping away from class to recharge and refocus. How do you maintain balance during busy weeks? #Productivity #LifelongLearning #WorkLifeBalance",
+                RewriteMode.Twitter => "Taking tomorrow off from class to attend to personal commitments. Back and ready the next day! 📚⚡ #Priorities",
+                RewriteMode.Facebook => "Hey everyone! Just a quick update: I won't be able to attend class tomorrow due to some personal work. Wishing everyone a wonderful and productive day! What's everyone working on this week?",
+                RewriteMode.Instagram => "Taking a mindful pause tomorrow for personal commitments! ✨ Remember that taking time when needed helps you return stronger. Drop a ❤️ if you believe in balance! 📚🌱\n\n#Balance #SelfCare #Focus #DailyLife #Growth",
                 _ => "Dear Sir, I will be unable to attend tomorrow's class due to personal commitments. Please grant me leave for the day."
             };
         }
@@ -117,6 +121,10 @@ public class MockAIProvider : IAIProvider
                     "german" => "Dies ist ein Testsatz, der verbessert werden muss.",
                     _ => "This is a test sentence that requires improvement."
                 },
+                RewriteMode.LinkedIn => "Clear, effective communication is the foundation of high-performing teams. This test sentence demonstrates precision and impactful phrasing.\n\n#Communication #Excellence #ProfessionalDevelopment",
+                RewriteMode.Twitter => "Clear writing equals clear thinking. Polishing this test sentence for maximum impact! ✍️🚀 #WritingTips",
+                RewriteMode.Facebook => "Just testing out some creative writing today! Here is an improved test sentence that reads much better. Hope you all are having a great week! 😊",
+                RewriteMode.Instagram => "Elevating words, one sentence at a time! ✨ Here is a refined test sentence designed for clarity and aesthetic flow.\n\n#WritingCommunity #Creativity #Inspiration #Aesthetic",
                 _ => "This is a refined test sentence with improved clarity and flow."
             };
         }
@@ -135,6 +143,10 @@ public class MockAIProvider : IAIProvider
             RewriteMode.Grammar => CapitalizeFirst(input),
             RewriteMode.Translate => $"[Translated to {request.TargetLanguage ?? "English"}]: {input}",
             RewriteMode.Custom => $"[Custom: {request.CustomInstruction}]: {input}",
+            RewriteMode.LinkedIn => $"💡 Key Takeaway:\n\n{input}\n\nWhat are your thoughts on this? Let's connect and discuss in the comments below.\n\n#Leadership #Innovation #Growth",
+            RewriteMode.Twitter => input.Length > 200 ? $"{input[..200]}... 🚀 #Insights" : $"{input} 🚀 #Insights",
+            RewriteMode.Facebook => $"Just wanted to share this thought: {input} 😊 What do you think about this?",
+            RewriteMode.Instagram => $"✨ Inspiration of the day:\n\n{input}\n\nDouble tap if this resonates with you! 👇\n\n#DailyInspiration #Mindset #Vibes #Creativity",
             _ => input
         };
     }

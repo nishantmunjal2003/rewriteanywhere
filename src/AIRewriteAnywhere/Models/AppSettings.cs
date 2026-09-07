@@ -14,6 +14,7 @@ public class AppSettings
     public bool PreviewBeforeReplace { get; set; } = false;
     public bool RestoreClipboard { get; set; } = true;
     public bool EnableNotifications { get; set; } = true;
+    public bool EnablePowerEfficiency { get; set; } = true;
 
     // AI Provider Settings
     public ProviderType ActiveProvider { get; set; } = ProviderType.OpenAI;
@@ -42,6 +43,7 @@ public class AppSettings
             PreviewBeforeReplace = this.PreviewBeforeReplace,
             RestoreClipboard = this.RestoreClipboard,
             EnableNotifications = this.EnableNotifications,
+            EnablePowerEfficiency = this.EnablePowerEfficiency,
             ActiveProvider = this.ActiveProvider,
             OpenAIModel = this.OpenAIModel,
             GeminiModel = this.GeminiModel,

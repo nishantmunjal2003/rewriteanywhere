@@ -108,4 +108,76 @@ public class MockAIProviderTests
         Assert.False(response.Success);
         Assert.Equal("AI provider returned an empty response.", response.ErrorMessage);
     }
+
+    [Fact]
+    public async Task SocialMediaRewrites_LinkedIn_GeneratesProfessionalPostWithHashtags()
+    {
+        var provider = new MockAIProvider { SimulatedDelayMs = 0 };
+        const string input = "sir tomorrow i will not able to attend class because i have some personal work. please allow me leave.";
+
+        var request = new RewriteRequest(input, RewriteMode.LinkedIn);
+        var response = await provider.RewriteAsync(request, "mock-key", "mock-turbo");
+
+        Assert.True(response.Success);
+        Assert.Contains("#", response.RewrittenText);
+        Assert.Contains("Balancing commitments", response.RewrittenText);
+    }
+
+    [Fact]
+    public async Task SocialMediaRewrites_Twitter_GeneratesPunchyPost()
+    {
+        var provider = new MockAIProvider { SimulatedDelayMs = 0 };
+        const string input = "sir tomorrow i will not able to attend class because i have some personal work. please allow me leave.";
+
+        var request = new RewriteRequest(input, RewriteMode.Twitter);
+        var response = await provider.RewriteAsync(request, "mock-key", "mock-turbo");
+
+        Assert.True(response.Success);
+        Assert.True(response.RewrittenText.Length <= 280);
+        Assert.Contains("#Priorities", response.RewrittenText);
+    }
+
+    [Fact]
+    public async Task SocialMediaRewrites_Facebook_GeneratesCommunityPost()
+    {
+        var provider = new MockAIProvider { SimulatedDelayMs = 0 };
+        const string input = "sir tomorrow i will not able to attend class because i have some personal work. please allow me leave.";
+
+        var request = new RewriteRequest(input, RewriteMode.Facebook);
+        var response = await provider.RewriteAsync(request, "mock-key", "mock-turbo");
+
+        Assert.True(response.Success);
+        Assert.Contains("Hey everyone!", response.RewrittenText);
+    }
+
+    [Fact]
+    public async Task SocialMediaRewrites_Instagram_GeneratesCaptionWithHashtags()
+    {
+        var provider = new MockAIProvider { SimulatedDelayMs = 0 };
+        const string input = "sir tomorrow i will not able to attend class because i have some personal work. please allow me leave.";
+
+        var request = new RewriteRequest(input, RewriteMode.Instagram);
+        var response = await provider.RewriteAsync(request, "mock-key", "mock-turbo");
+
+        Assert.True(response.Success);
+        Assert.Contains("#Balance", response.RewrittenText);
+        Assert.Contains("✨", response.RewrittenText);
+    }
+
+    [Fact]
+    public async Task ArbitraryText_SocialMediaRewrites_GenerateValidFormat()
+    {
+        var provider = new MockAIProvider { SimulatedDelayMs = 0 };
+        const string input = "AI agents are transforming software engineering";
+
+        var liResp = await provider.RewriteAsync(new RewriteRequest(input, RewriteMode.LinkedIn), "mock-key", "mock-turbo");
+        var twResp = await provider.RewriteAsync(new RewriteRequest(input, RewriteMode.Twitter), "mock-key", "mock-turbo");
+        var fbResp = await provider.RewriteAsync(new RewriteRequest(input, RewriteMode.Facebook), "mock-key", "mock-turbo");
+        var igResp = await provider.RewriteAsync(new RewriteRequest(input, RewriteMode.Instagram), "mock-key", "mock-turbo");
+
+        Assert.Contains("💡 Key Takeaway", liResp.RewrittenText);
+        Assert.Contains("#Insights", twResp.RewrittenText);
+        Assert.Contains("Just wanted to share this thought", fbResp.RewrittenText);
+        Assert.Contains("✨ Inspiration of the day", igResp.RewrittenText);
+    }
 }

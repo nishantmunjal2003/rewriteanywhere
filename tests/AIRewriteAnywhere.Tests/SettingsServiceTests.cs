@@ -35,6 +35,7 @@ public class SettingsServiceTests : IDisposable
         Assert.Equal(Key.R, service.Settings.HotkeyKey);
         Assert.False(service.Settings.PreviewBeforeReplace);
         Assert.True(service.Settings.RestoreClipboard);
+        Assert.True(service.Settings.EnablePowerEfficiency);
     }
 
     [Fact]
@@ -46,6 +47,7 @@ public class SettingsServiceTests : IDisposable
         service.Settings.ActiveProvider = ProviderType.Gemini;
         service.Settings.PreviewBeforeReplace = true;
         service.Settings.FloatingButtonSize = FloatingButtonSize.Large;
+        service.Settings.EnablePowerEfficiency = false;
         service.Settings.WritingStyle.Enabled = true;
         service.Settings.WritingStyle.Tone = "Direct";
 
@@ -57,6 +59,7 @@ public class SettingsServiceTests : IDisposable
         Assert.Equal(ProviderType.Gemini, reloadedService.Settings.ActiveProvider);
         Assert.True(reloadedService.Settings.PreviewBeforeReplace);
         Assert.Equal(FloatingButtonSize.Large, reloadedService.Settings.FloatingButtonSize);
+        Assert.False(reloadedService.Settings.EnablePowerEfficiency);
         Assert.True(reloadedService.Settings.WritingStyle.Enabled);
         Assert.Equal("Direct", reloadedService.Settings.WritingStyle.Tone);
     }

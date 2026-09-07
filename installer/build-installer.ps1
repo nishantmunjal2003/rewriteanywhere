@@ -9,7 +9,8 @@ Set-Location $rootDir
 
 # 1. Publish Release binary
 Write-Host "`n[1/3] Publishing .NET Release application..." -ForegroundColor Cyan
-dotnet publish src/AIRewriteAnywhere/AIRewriteAnywhere.csproj -c Release -r win-x64 --self-contained false -o dist
+$dotnetCmd = if (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe") { "$env:USERPROFILE\.dotnet\dotnet.exe" } else { "dotnet" }
+& $dotnetCmd publish src/AIRewriteAnywhere/AIRewriteAnywhere.csproj -c Release -r win-x64 --self-contained false -o dist
 
 # 2. Locate ISCC.exe
 Write-Host "`n[2/3] Locating Inno Setup Compiler..." -ForegroundColor Cyan
@@ -46,9 +47,10 @@ Write-Host "`n[3/3] Compiling Windows Installer (AI-Rewrite-Anywhere-Setup.exe).
 
 $setupExe = Join-Path $rootDir "installer\AI-Rewrite-Anywhere-Setup.exe"
 if (Test-Path $setupExe) {
-    $sizeMb = [math]::Round(((Get-Item $setupExe).Length / 1MB), 2)
-    Write-Host "`n✓ Installer created successfully!" -ForegroundColor Green
-    Write-Host "Path: $setupExe ($sizeMb MB)" -ForegroundColor Green
+    $item = Get-Item $setupExe
+    $sizeMb = [math]::Round($item.Length / 1048576, 2)
+    Write-Host ""
+    Write-Host "[OK] Installer created successfully at: $setupExe (${sizeMb} MB)" -ForegroundColor Green
 } else {
-    throw "Installer generation failed. $setupExe was not found."
+    throw "Installer generation failed."
 }

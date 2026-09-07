@@ -212,6 +212,14 @@
                                 <TextBlock Text="Shows subtle notifications when text is replaced or errors occur." Style="{StaticResource SubLabelStyle}"/>
                             </StackPanel>
                         </CheckBox>
+
+                        <!-- Power Efficiency -->
+                        <CheckBox x:Name="ChkEnablePowerEfficiency" Margin="0,6,0,12" VerticalContentAlignment="Center" IsChecked="True">
+                            <StackPanel>
+                                <TextBlock Text="⚡ Power Efficiency &amp; Battery Saver (Recommended)" Style="{StaticResource ModernLabelStyle}"/>
+                                <TextBlock Text="Dynamically adapts background polling when idle or on battery to conserve CPU and extend battery life." Style="{StaticResource SubLabelStyle}"/>
+                            </StackPanel>
+                        </CheckBox>
                     </StackPanel>
                 </ScrollViewer>
 
@@ -370,6 +378,42 @@
                                    Foreground="#D1D5DB"
                                    FontSize="13"
                                    Margin="0,0,0,16"/>
+
+                        <!-- Creator & Research Lab Section -->
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="🔬 Creator &amp; Research Lab" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6"/>
+                                <TextBlock Text="Conceived, designed, and engineered for high-performance AI writing productivity." Style="{StaticResource SubLabelStyle}" Margin="0,2,0,10"/>
+
+                                <Grid Margin="0,4,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Lead Creator:" Foreground="#9CA3AF" FontSize="13" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                                        <Hyperlink NavigateUri="https://nishantmunjal.com" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
+                                            <Run Text="Dr. Nishant Munjal" FontWeight="SemiBold"/>
+                                            <Run Text=" ↗" FontSize="11" Foreground="#93C5FD"/>
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </Grid>
+
+                                <Grid Margin="0,2,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Research Lab:" Foreground="#9CA3AF" FontSize="13" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                                        <Hyperlink NavigateUri="https://nishantmunjal.com/nmril" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
+                                            <Run Text="NMRIL Labs" FontWeight="SemiBold"/>
+                                            <Run Text=" ↗" FontSize="11" Foreground="#93C5FD"/>
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
 
                         <Border Background="#1F2937" CornerRadius="8" Padding="14">
                             <StackPanel>

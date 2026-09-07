@@ -29,6 +29,10 @@ public class PromptBuilderTests
     [InlineData(RewriteMode.Shorten, "significantly more concise")]
     [InlineData(RewriteMode.Expand, "Elaborate on the ideas")]
     [InlineData(RewriteMode.Grammar, "Correct all spelling, grammar")]
+    [InlineData(RewriteMode.LinkedIn, "engaging, high-impact LinkedIn post")]
+    [InlineData(RewriteMode.Twitter, "punchy, engaging X/Twitter post")]
+    [InlineData(RewriteMode.Facebook, "authentic, engaging Facebook post")]
+    [InlineData(RewriteMode.Instagram, "captivating Instagram post caption")]
     public void BuildSystemPrompt_IncludesSpecificModeInstructions(RewriteMode mode, string expectedPhrase)
     {
         var request = new RewriteRequest("Sample text", mode);
