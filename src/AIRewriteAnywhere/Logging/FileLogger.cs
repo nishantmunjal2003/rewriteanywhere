@@ -42,8 +42,16 @@ public class FileLogger : IAppLogger
         var formatted = message;
         if (ex != null)
         {
-            // Sanitize exception messages and stack traces
             formatted += $" | Exception: {ex.GetType().Name} - {ex.Message}";
+            var current = ex.InnerException;
+            int depth = 1;
+            while (current != null && depth <= 5)
+            {
+                formatted += $" | Inner{depth}: {current.GetType().Name} - {current.Message}";
+                current = current.InnerException;
+                depth++;
+            }
+            formatted += $" | StackTrace: {ex.StackTrace}";
         }
         WriteEntry("ERROR", formatted);
     }

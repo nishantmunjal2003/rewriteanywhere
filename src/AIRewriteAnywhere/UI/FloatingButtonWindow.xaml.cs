@@ -3,6 +3,8 @@ using System.Windows.Interop;
 using AIRewriteAnywhere.Common;
 using AIRewriteAnywhere.Models;
 using AIRewriteAnywhere.WindowsIntegration;
+using Point = System.Windows.Point;
+using Rect = System.Windows.Rect;
 
 namespace AIRewriteAnywhere.UI;
 
@@ -37,31 +39,49 @@ public partial class FloatingButtonWindow : Window
         ActionButton.Width = diameter;
         ActionButton.Height = diameter;
 
+        double totalSize = diameter + 12;
+
+        MonitorWorkAreaInfo monInfo;
         double targetX;
         double targetY;
 
         if (selection.HasValidBounds)
         {
-            targetX = selection.ScreenBounds.Right + 8;
-            targetY = selection.ScreenBounds.Top - 12;
+            monInfo = DisplayHelper.GetMonitorInfoForRect(selection.ScreenBounds);
+            var selDip = DisplayHelper.ConvertPhysicalRectToDip(
+                selection.ScreenBounds,
+                monInfo.DpiScaleX,
+                monInfo.DpiScaleY);
+
+            targetX = selDip.Right + 8;
+            targetY = selDip.Top - 12;
         }
         else
         {
             NativeMethods.GetCursorPos(out var pt);
-            targetX = pt.X + 16;
-            targetY = pt.Y - 24;
+            monInfo = DisplayHelper.GetMonitorInfoForPoint(pt.X, pt.Y);
+            var dipPt = DisplayHelper.ConvertPhysicalPointToDip(
+                pt.X,
+                pt.Y,
+                monInfo.DpiScaleX,
+                monInfo.DpiScaleY);
+
+            targetX = dipPt.X + 16;
+            targetY = dipPt.Y - 24;
         }
 
-        // Keep within virtual screen bounds
-        var screenWidth = SystemParameters.VirtualScreenWidth;
-        var screenHeight = SystemParameters.VirtualScreenHeight;
+        var work = monInfo.WorkAreaDip;
 
-        if (targetX + 60 > screenWidth)
-            targetX = screenWidth - 65;
-        if (targetY < 10)
-            targetY = 10;
-        if (targetY + 60 > screenHeight)
-            targetY = screenHeight - 65;
+        // Keep strictly within monitor working area bounds
+        if (targetX + totalSize + 4 > work.Right)
+            targetX = work.Right - totalSize - 4;
+        if (targetX < work.Left + 4)
+            targetX = work.Left + 4;
+
+        if (targetY + totalSize + 4 > work.Bottom)
+            targetY = work.Bottom - totalSize - 4;
+        if (targetY < work.Top + 4)
+            targetY = work.Top + 4;
 
         this.Left = targetX;
         this.Top = targetY;

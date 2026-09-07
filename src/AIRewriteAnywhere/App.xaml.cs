@@ -1,3 +1,6 @@
+using System.IO;
+using System.IO.Pipes;
+using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using AIRewriteAnywhere.AI;
@@ -18,6 +21,11 @@ namespace AIRewriteAnywhere;
 
 public partial class App : Application
 {
+    private const string MutexName = "AIRewriteAnywhere_SingleInstance_Mutex";
+    private const string PipeName = "AIRewriteAnywhere_IPC_Pipe";
+
+    private Mutex? _singleInstanceMutex;
+    private CancellationTokenSource? _ipcServerCts;
     private IAppLogger? _logger;
     private ISecureStorage? _secureStorage;
     private ISettingsService? _settingsService;
@@ -38,20 +46,46 @@ public partial class App : Application
 
         _logger = new FileLogger();
 
+        bool isPrimary = false;
         try
         {
+            _singleInstanceMutex = new Mutex(true, MutexName, out isPrimary);
+        }
+        catch (AbandonedMutexException)
+        {
+            isPrimary = true;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning($"Mutex check encountered: {ex.Message}");
             var currentProc = System.Diagnostics.Process.GetCurrentProcess();
             var existingProcs = System.Diagnostics.Process.GetProcessesByName(currentProc.ProcessName)
                 .Where(p => p.Id != currentProc.Id)
                 .ToList();
-            if (existingProcs.Count > 0)
-            {
-                _logger.LogWarning($"Another instance of {Constants.AppName} is already running (PID {existingProcs[0].Id}). Exiting duplicate.");
-                Shutdown();
-                return;
-            }
+            isPrimary = existingProcs.Count == 0;
         }
-        catch { }
+
+        if (!isPrimary)
+        {
+            _logger?.LogInfo("Another instance of AI Rewrite Anywhere is already running. Signaling it to open UI...");
+            try
+            {
+                using var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+                pipeClient.Connect(2000);
+                using var writer = new StreamWriter(pipeClient) { AutoFlush = true };
+                writer.WriteLine("SHOW");
+                pipeClient.WaitForPipeDrain();
+            }
+            catch (Exception pipeEx)
+            {
+                _logger?.LogWarning($"Could not signal running instance: {pipeEx.Message}");
+            }
+
+            Shutdown();
+            return;
+        }
+
+        StartIpcServer();
 
         DispatcherUnhandledException += (s, args) =>
         {
@@ -202,6 +236,17 @@ public partial class App : Application
                 ToolTipIcon.Info);
 
             _logger.LogInfo("Application initialized and running in system tray.");
+
+            // Show settings window on interactive launch (unless started with --minimized / --silent)
+            bool startMinimized = e.Args.Any(a =>
+                string.Equals(a, "--minimized", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(a, "--silent", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(a, "-minimized", StringComparison.OrdinalIgnoreCase));
+
+            if (!startMinimized)
+            {
+                OpenSettingsWindow();
+            }
         }
         catch (Exception ex)
         {
@@ -215,32 +260,126 @@ public partial class App : Application
         }
     }
 
+    private void StartIpcServer()
+    {
+        _ipcServerCts = new CancellationTokenSource();
+        var ct = _ipcServerCts.Token;
+
+        Task.Run(async () =>
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    using var server = new NamedPipeServerStream(
+                        PipeName,
+                        PipeDirection.In,
+                        NamedPipeServerStream.MaxAllowedServerInstances,
+                        PipeTransmissionMode.Byte,
+                        PipeOptions.Asynchronous);
+
+                    await server.WaitForConnectionAsync(ct);
+
+                    using var reader = new StreamReader(server);
+                    var cmd = await reader.ReadLineAsync(ct);
+                    _logger?.LogInfo($"Received IPC command: '{cmd}' from second instance.");
+
+                    if (cmd == "SHOW" || string.IsNullOrEmpty(cmd))
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            OpenSettingsWindow();
+                            _trayIconManager?.ShowNotification(
+                                Constants.AppName,
+                                "AI Rewrite Anywhere is active! Press Ctrl+Shift+R or select text.",
+                                ToolTipIcon.Info);
+                        });
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError("IPC server exception", ex);
+                    try { await Task.Delay(1000, ct); } catch { break; }
+                }
+            }
+        }, ct);
+    }
+
     private void OpenSettingsWindow(int tabIndex = 0)
     {
-        // Prevent opening multiple settings windows
-        foreach (Window w in Current.Windows)
+        try
         {
-            if (w is SettingsWindow sw)
+            _logger?.LogInfo($"OpenSettingsWindow invoked. tabIndex={tabIndex}, settingsServiceNull={_settingsService == null}, startupManagerNull={_startupManager == null}");
+
+            // Prevent opening multiple settings windows
+            foreach (Window w in Current.Windows)
             {
-                sw.Activate();
-                return;
+                if (w is SettingsWindow sw)
+                {
+                    _logger?.LogInfo("Existing SettingsWindow found in Current.Windows. Activating existing instance.");
+                    if (sw.WindowState == WindowState.Minimized)
+                    {
+                        sw.WindowState = WindowState.Normal;
+                    }
+                    sw.Show();
+                    sw.Activate();
+                    sw.Topmost = true;
+                    sw.Topmost = false;
+                    sw.Focus();
+                    return;
+                }
+            }
+
+            if (_settingsService != null && _secureStorage != null && _providerFactory != null && _startupManager != null)
+            {
+                _logger?.LogInfo("Creating and showing new SettingsWindow...");
+                var settingsWin = new SettingsWindow(_settingsService, _secureStorage, _providerFactory, _startupManager);
+                if (tabIndex == 5)
+                {
+                    settingsWin.TabAbout.IsChecked = true;
+                }
+
+                settingsWin.Closed += (s, e) =>
+                {
+                    _logger?.LogInfo("SettingsWindow closed by user.");
+                    _trayIconManager?.ShowNotification(
+                        Constants.AppName,
+                        "AI Rewrite Anywhere is running in your system tray. Press Ctrl+Shift+R anytime!",
+                        ToolTipIcon.Info);
+                };
+
+                settingsWin.Show();
+                settingsWin.Activate();
+                settingsWin.Topmost = true;
+                settingsWin.Topmost = false;
+                settingsWin.Focus();
+                _logger?.LogInfo($"SettingsWindow displayed successfully. IsVisible={settingsWin.IsVisible}");
+            }
+            else
+            {
+                _logger?.LogWarning("OpenSettingsWindow called before dependencies were initialized.");
             }
         }
-
-        if (_settingsService != null && _secureStorage != null && _providerFactory != null && _startupManager != null)
+        catch (Exception ex)
         {
-            var settingsWin = new SettingsWindow(_settingsService, _secureStorage, _providerFactory, _startupManager);
-            if (tabIndex == 5)
-            {
-                settingsWin.TabAbout.IsChecked = true;
-            }
-            settingsWin.Show();
+            _logger?.LogError("Failed to open SettingsWindow", ex);
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         _logger?.LogInfo("Application shutting down.");
+        _ipcServerCts?.Cancel();
+        try
+        {
+            _singleInstanceMutex?.ReleaseMutex();
+        }
+        catch { }
+        _singleInstanceMutex?.Dispose();
         _hotkeyManager?.Dispose();
         _selectionWatcher?.Dispose();
         _trayIconManager?.Dispose();

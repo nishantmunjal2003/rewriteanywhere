@@ -19,6 +19,7 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 DisableProgramGroupPage=auto
 UninstallDisplayIcon={app}\{#MyAppExeName}
+SetupIconFile=app_icon.ico
 VersionInfoVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription=AI Rewrite Anywhere Setup
@@ -28,7 +29,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "startupicon"; Description: "Start automatically with Windows"; GroupDescription: "Windows Integration:"
 
 [Files]

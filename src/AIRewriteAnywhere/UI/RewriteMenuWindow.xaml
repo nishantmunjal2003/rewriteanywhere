@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="AI Rewrite Menu"
+        Icon="pack://application:,,,/Assets/app_icon.ico"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -41,6 +42,30 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#3F3F46" CornerRadius="3"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Background="#18181B"
@@ -59,12 +84,19 @@
 
         <Grid>
             <!-- Normal Menu View -->
-            <StackPanel x:Name="MenuContent" Margin="8">
+            <Grid x:Name="MenuContent" Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
                 <!-- Header -->
-                <Grid Margin="4,2,4,8">
+                <Grid Grid.Row="0" Margin="4,2,4,6">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="✨" FontSize="14" Foreground="#A78BFA" Margin="0,0,6,0"/>
-                        <TextBlock Text="AI Rewrite" FontSize="13" FontWeight="SemiBold" Foreground="#F4F4F5"/>
+                        <Border Width="18" Height="18" CornerRadius="4" Margin="0,0,6,0" ClipToBounds="True">
+                            <Image Source="pack://application:,,,/Assets/app_icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Border>
+                        <TextBlock Text="AI Rewrite" FontSize="13" FontWeight="SemiBold" Foreground="#F4F4F5" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button Content="✕"
                             HorizontalAlignment="Right"
@@ -76,7 +108,13 @@
                             Click="CloseButton_Click"/>
                 </Grid>
 
-                <Separator Background="#27272A" Margin="0,0,0,6"/>
+                <!-- Scrollable Options Section -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False">
+                    <StackPanel Margin="0,0,2,0">
+                        <Separator Background="#27272A" Margin="0,0,0,6"/>
 
                 <!-- Primary Rewrite Actions -->
                 <Button Content="✨  Improve" Style="{StaticResource MenuItemButtonStyle}" Click="Mode_Click" Tag="Improve"/>
@@ -144,20 +182,19 @@
                             Cursor="Hand"
                             Click="RunCustom_Click"/>
                 </Grid>
-            </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
 
             <!-- Busy / Progress Overlay -->
             <Grid x:Name="BusyOverlay" Background="#E618181B" Visibility="Collapsed">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
-                    <TextBlock Text="✨"
-                               FontSize="28"
-                               HorizontalAlignment="Center"
-                               Foreground="#A78BFA"
-                               Margin="0,0,0,10">
-                        <TextBlock.RenderTransform>
-                            <RotateTransform Angle="0" x:Name="SpinnerRotate" CenterX="14" CenterY="14"/>
-                        </TextBlock.RenderTransform>
-                    </TextBlock>
+                    <Border Width="36" Height="36" CornerRadius="8" Margin="0,0,0,10" ClipToBounds="True" HorizontalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Direction="270" Color="#7C3AED" Opacity="0.5"/>
+                        </Border.Effect>
+                        <Image Source="pack://application:,,,/Assets/app_icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
                     <TextBlock Text="Rewriting..."
                                FontSize="14"
                                FontWeight="SemiBold"

@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>Assets\app_icon.ico</ApplicationIcon>
     <AssemblyName>AIRewriteAnywhere</AssemblyName>
     <RootNamespace>AIRewriteAnywhere</RootNamespace>
     <Version>0.1.0</Version>
@@ -15,6 +15,17 @@
     <Product>AI Rewrite Anywhere</Product>
     <Description>Select text anywhere in Windows to rewrite with AI</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app_icon.ico" />
+    <Resource Include="Assets\app_icon.png" />
+    <None Update="Assets\app_icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\app_icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />

@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using System.IO;
 using System.Windows.Forms;
 using AIRewriteAnywhere.Common;
 using AIRewriteAnywhere.Core;
@@ -33,16 +34,31 @@ public class TrayIconManager : IDisposable
         _openSettingsAction = openSettingsAction;
         _openAboutAction = openAboutAction;
 
+        var icon = CreateAppIcon();
         _notifyIcon = new NotifyIcon
         {
+            Icon = icon,
             Text = Constants.AppName,
-            Visible = true,
-            Icon = CreateAppIcon()
+            Visible = true
         };
 
         BuildContextMenu();
 
+        _notifyIcon.MouseClick += (s, e) =>
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                _openSettingsAction();
+            }
+        };
         _notifyIcon.DoubleClick += (s, e) => _openSettingsAction();
+
+        // Ensure Windows 11 promotes icon to visible taskbar tray instead of hiding in overflow (^)
+        Task.Run(async () =>
+        {
+            await Task.Delay(400);
+            PromoteInNotificationArea();
+        });
     }
 
     private void BuildContextMenu()
@@ -138,27 +154,83 @@ public class TrayIconManager : IDisposable
 
     private static Icon CreateAppIcon()
     {
-        using var bmp = new Bitmap(32, 32);
+        var smallSize = SystemInformation.SmallIconSize;
+        try
+        {
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var icoPath = Path.Combine(baseDir, "Assets", "app_icon.ico");
+            if (File.Exists(icoPath))
+            {
+                return new Icon(icoPath, smallSize.Width, smallSize.Height);
+            }
+
+            var uri = new Uri("pack://application:,,,/Assets/app_icon.ico");
+            var streamInfo = System.Windows.Application.GetResourceStream(uri);
+            if (streamInfo?.Stream != null)
+            {
+                return new Icon(streamInfo.Stream, smallSize.Width, smallSize.Height);
+            }
+        }
+        catch { }
+
+        using var bmp = new Bitmap(smallSize.Width, smallSize.Height);
         using var g = Graphics.FromImage(bmp);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
         // Draw a dark purple rounded background badge
         using var brush = new SolidBrush(System.Drawing.Color.FromArgb(124, 58, 237));
-        g.FillEllipse(brush, 1, 1, 29, 29);
+        g.FillEllipse(brush, 0, 0, smallSize.Width - 1, smallSize.Height - 1);
 
         // Draw the ✨ spark
         using var textBrush = new SolidBrush(System.Drawing.Color.White);
-        using var font = new Font("Segoe UI Emoji", 14, System.Drawing.FontStyle.Bold);
+        using var font = new Font("Segoe UI Emoji", Math.Max(8, smallSize.Height / 2), System.Drawing.FontStyle.Bold);
         var sf = new StringFormat
         {
             Alignment = StringAlignment.Center,
             LineAlignment = StringAlignment.Center
         };
-        g.DrawString("✨", font, textBrush, new RectangleF(0, 0, 32, 32), sf);
+        g.DrawString("✨", font, textBrush, new RectangleF(0, 0, smallSize.Width, smallSize.Height), sf);
 
         var hIcon = bmp.GetHicon();
         return Icon.FromHandle(hIcon);
+    }
+
+    public static void PromoteInNotificationArea()
+    {
+        try
+        {
+            var exePath = Environment.ProcessPath;
+            if (string.IsNullOrEmpty(exePath))
+            {
+                exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+            }
+            if (string.IsNullOrEmpty(exePath)) return;
+
+            using var baseKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Control Panel\NotifyIconSettings", true);
+            if (baseKey == null) return;
+
+            foreach (var subKeyName in baseKey.GetSubKeyNames())
+            {
+                using var subKey = baseKey.OpenSubKey(subKeyName, true);
+                if (subKey != null)
+                {
+                    var val = subKey.GetValue("ExecutablePath") as string;
+                    if (!string.IsNullOrEmpty(val) && string.Equals(val, exePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var isPromoted = subKey.GetValue("IsPromoted");
+                        if (isPromoted == null || !Equals(isPromoted, 1))
+                        {
+                            subKey.SetValue("IsPromoted", 1, Microsoft.Win32.RegistryValueKind.DWord);
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Non-critical, ignore registry permission issues
+        }
     }
 
     public void Dispose()

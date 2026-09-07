@@ -12,6 +12,7 @@
 ## Build Artifacts & Packages
 *.nupkg
 *.snupkg
+*.zip
 packages/
 
 ## Inno Setup Output (keep output directory clean if desired, or exclude temp)

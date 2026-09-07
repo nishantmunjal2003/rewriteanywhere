@@ -5,6 +5,9 @@ using System.Windows.Media.Animation;
 using AIRewriteAnywhere.Common;
 using AIRewriteAnywhere.Models;
 using AIRewriteAnywhere.WindowsIntegration;
+using Point = System.Windows.Point;
+using Rect = System.Windows.Rect;
+using Size = System.Windows.Size;
 
 namespace AIRewriteAnywhere.UI;
 
@@ -34,37 +37,45 @@ public partial class RewriteMenuWindow : Window
         BusyOverlay.Visibility = Visibility.Collapsed;
         CustomInstructionText.Text = string.Empty;
 
-        double targetX;
-        double targetY;
+        // 1. Get monitor working area and DPI scale for the target selection/cursor
+        MonitorWorkAreaInfo monInfo;
+        Rect targetBoundsDip;
 
         if (selection.HasValidBounds)
         {
-            targetX = selection.ScreenBounds.Left;
-            targetY = selection.ScreenBounds.Bottom + 6;
+            monInfo = DisplayHelper.GetMonitorInfoForRect(selection.ScreenBounds);
+            targetBoundsDip = DisplayHelper.ConvertPhysicalRectToDip(
+                selection.ScreenBounds,
+                monInfo.DpiScaleX,
+                monInfo.DpiScaleY);
         }
         else
         {
             NativeMethods.GetCursorPos(out var pt);
-            targetX = pt.X + 8;
-            targetY = pt.Y + 8;
+            monInfo = DisplayHelper.GetMonitorInfoForPoint(pt.X, pt.Y);
+            var dipPt = DisplayHelper.ConvertPhysicalPointToDip(
+                pt.X,
+                pt.Y,
+                monInfo.DpiScaleX,
+                monInfo.DpiScaleY);
+            targetBoundsDip = new Rect(dipPt.X, dipPt.Y, 0, 0);
         }
 
-        var workArea = SystemParameters.WorkArea;
-        var menuWidth = this.Width;
-        var estimatedHeight = 440;
+        // 2. Measure desired height of the menu
+        this.Measure(new Size(this.Width, double.PositiveInfinity));
+        double desiredHeight = this.DesiredSize.Height > 0 ? this.DesiredSize.Height : 440;
 
-        if (targetX + menuWidth > workArea.Right)
-            targetX = workArea.Right - menuWidth - 10;
-        if (targetX < workArea.Left)
-            targetX = workArea.Left + 10;
+        // 3. Compute optimal position and apply maximum height constraint
+        var pos = DisplayHelper.CalculateOptimalMenuPosition(
+            targetBoundsDip,
+            this.Width,
+            desiredHeight,
+            monInfo.WorkAreaDip,
+            out double maxAllowedHeight);
 
-        if (targetY + estimatedHeight > workArea.Bottom)
-            targetY = (selection.HasValidBounds ? selection.ScreenBounds.Top : targetY) - estimatedHeight - 10;
-        if (targetY < workArea.Top)
-            targetY = workArea.Top + 10;
-
-        this.Left = targetX;
-        this.Top = targetY;
+        this.MaxHeight = maxAllowedHeight;
+        this.Left = pos.X;
+        this.Top = pos.Y;
 
         this.Show();
         this.Activate();
@@ -154,6 +165,12 @@ public partial class RewriteMenuWindow : Window
     }
 
     private bool _isClosing = false;
+
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        _isClosing = true;
+        base.OnClosing(e);
+    }
 
     public void SafeClose()
     {
