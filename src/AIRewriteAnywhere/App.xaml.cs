@@ -70,6 +70,8 @@ public partial class App : Application
             _logger?.LogInfo("Another instance of AI Rewrite Anywhere is already running. Signaling it to open UI...");
             try
             {
+                NativeMethods.AllowSetForegroundWindow(NativeMethods.ASFW_ANY);
+
                 using var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
                 pipeClient.Connect(2000);
                 using var writer = new StreamWriter(pipeClient) { AutoFlush = true };
@@ -311,6 +313,60 @@ public partial class App : Application
         }, ct);
     }
 
+    private void BringWindowToForeground(Window window)
+    {
+        if (window == null) return;
+
+        try
+        {
+            if (window.WindowState == WindowState.Minimized)
+            {
+                window.WindowState = WindowState.Normal;
+            }
+
+            DisplayHelper.CenterOnActiveMonitor(window);
+
+            window.Show();
+
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(window).EnsureHandle();
+            if (hwnd != IntPtr.Zero)
+            {
+                NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+
+                var foregroundHwnd = NativeMethods.GetForegroundWindow();
+                uint foregroundThreadId = NativeMethods.GetWindowThreadProcessId(foregroundHwnd, out _);
+                uint currentThreadId = NativeMethods.GetCurrentThreadId();
+
+                if (foregroundThreadId != currentThreadId && foregroundThreadId != 0)
+                {
+                    NativeMethods.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+                    NativeMethods.BringWindowToTop(hwnd);
+                    NativeMethods.SetForegroundWindow(hwnd);
+                    NativeMethods.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+                }
+                else
+                {
+                    NativeMethods.BringWindowToTop(hwnd);
+                    NativeMethods.SetForegroundWindow(hwnd);
+                }
+            }
+
+            window.Activate();
+            window.Topmost = true;
+            window.Focus();
+
+            // Defer clearing Topmost so window establishes its foreground z-order reliably
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                window.Topmost = false;
+            }));
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning($"BringWindowToForeground encountered exception: {ex.Message}");
+        }
+    }
+
     private void OpenSettingsWindow(int tabIndex = 0)
     {
         try
@@ -323,15 +379,11 @@ public partial class App : Application
                 if (w is SettingsWindow sw)
                 {
                     _logger?.LogInfo("Existing SettingsWindow found in Current.Windows. Activating existing instance.");
-                    if (sw.WindowState == WindowState.Minimized)
+                    if (tabIndex == 5)
                     {
-                        sw.WindowState = WindowState.Normal;
+                        sw.TabAbout.IsChecked = true;
                     }
-                    sw.Show();
-                    sw.Activate();
-                    sw.Topmost = true;
-                    sw.Topmost = false;
-                    sw.Focus();
+                    BringWindowToForeground(sw);
                     return;
                 }
             }
@@ -354,11 +406,7 @@ public partial class App : Application
                         ToolTipIcon.Info);
                 };
 
-                settingsWin.Show();
-                settingsWin.Activate();
-                settingsWin.Topmost = true;
-                settingsWin.Topmost = false;
-                settingsWin.Focus();
+                BringWindowToForeground(settingsWin);
                 _logger?.LogInfo($"SettingsWindow displayed successfully. IsVisible={settingsWin.IsVisible}");
             }
             else

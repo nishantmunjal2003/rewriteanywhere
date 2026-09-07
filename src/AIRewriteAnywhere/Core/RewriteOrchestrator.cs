@@ -105,7 +105,11 @@ public class RewriteOrchestrator : IRewriteOrchestrator
             Mode = mode,
             TargetLanguage = targetLanguage ?? settings.DefaultLanguage,
             CustomInstruction = customInstruction,
-            WritingStyle = settings.WritingStyle
+            WritingStyle = settings.WritingStyle,
+            UserName = settings.UserName,
+            UserPosition = settings.UserPosition,
+            IncludeEmailSignature = settings.IncludeEmailSignature,
+            CustomSignature = settings.CustomSignature
         };
 
         _logger.LogInfo($"Rewrite requested: Provider={providerType}, Model={model}, Mode={mode}");

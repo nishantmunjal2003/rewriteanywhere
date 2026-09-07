@@ -65,6 +65,28 @@ public class SettingsServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAndLoad_PersistsPersonalProfileAndEmailSettings()
+    {
+        var service = new SettingsService(_tempSettingsPath);
+        await service.LoadAsync();
+
+        service.Settings.UserName = "Dr. Nishant Munjal";
+        service.Settings.UserPosition = "Lead AI Researcher";
+        service.Settings.IncludeEmailSignature = false;
+        service.Settings.CustomSignature = "Regards,\nNishant";
+
+        await service.SaveAsync();
+
+        var reloadedService = new SettingsService(_tempSettingsPath);
+        await reloadedService.LoadAsync();
+
+        Assert.Equal("Dr. Nishant Munjal", reloadedService.Settings.UserName);
+        Assert.Equal("Lead AI Researcher", reloadedService.Settings.UserPosition);
+        Assert.False(reloadedService.Settings.IncludeEmailSignature);
+        Assert.Equal("Regards,\nNishant", reloadedService.Settings.CustomSignature);
+    }
+
+    [Fact]
     public async Task SettingsChanged_FiresOnSave()
     {
         var service = new SettingsService(_tempSettingsPath);

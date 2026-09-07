@@ -108,4 +108,54 @@ public class PromptBuilderTests
 
         Assert.DoesNotContain("User Writing Style Profile Preferences:", prompt);
     }
+
+    [Fact]
+    public void BuildSystemPrompt_EmailMode_IncludesSenderIdentityContext_WhenProvided()
+    {
+        var request = new RewriteRequest("Can we schedule a call?", RewriteMode.Email)
+        {
+            UserName = "Dr. Nishant Munjal",
+            UserPosition = "Lead AI Researcher",
+            IncludeEmailSignature = true
+        };
+
+        var prompt = PromptBuilder.BuildSystemPrompt(request);
+
+        Assert.Contains("Sender Identity Context:", prompt);
+        Assert.Contains("- Sender Name: Dr. Nishant Munjal", prompt);
+        Assert.Contains("- Sender Position / Role: Lead AI Researcher", prompt);
+        Assert.Contains("Dr. Nishant Munjal", prompt);
+        Assert.Contains("Lead AI Researcher", prompt);
+    }
+
+    [Fact]
+    public void BuildSystemPrompt_EmailMode_ExcludesSignature_WhenDisabled()
+    {
+        var request = new RewriteRequest("Can we schedule a call?", RewriteMode.Email)
+        {
+            UserName = "Dr. Nishant Munjal",
+            UserPosition = "Lead AI Researcher",
+            IncludeEmailSignature = false
+        };
+
+        var prompt = PromptBuilder.BuildSystemPrompt(request);
+
+        Assert.Contains("Do NOT include any personal signature, sign-off name, or job title at the end", prompt);
+    }
+
+    [Fact]
+    public void BuildSystemPrompt_EmailMode_UsesCustomSignature_WhenProvided()
+    {
+        var request = new RewriteRequest("Can we schedule a call?", RewriteMode.Email)
+        {
+            UserName = "Dr. Nishant Munjal",
+            UserPosition = "Lead AI Researcher",
+            IncludeEmailSignature = true,
+            CustomSignature = "Warm regards,\nDr. N. Munjal\nDirector | NMRIL"
+        };
+
+        var prompt = PromptBuilder.BuildSystemPrompt(request);
+
+        Assert.Contains("Include this exact signature block at the end of the email:\nWarm regards,\nDr. N. Munjal\nDirector | NMRIL", prompt);
+    }
 }

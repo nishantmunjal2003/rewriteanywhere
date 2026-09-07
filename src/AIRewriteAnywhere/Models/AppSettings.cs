@@ -28,6 +28,12 @@ public class AppSettings
     public string DefaultLanguage { get; set; } = "English";
     public WritingStyleProfile WritingStyle { get; set; } = new();
 
+    // Personal Profile & Email Context Settings
+    public string UserName { get; set; } = string.Empty;
+    public string UserPosition { get; set; } = string.Empty;
+    public bool IncludeEmailSignature { get; set; } = true;
+    public string CustomSignature { get; set; } = string.Empty;
+
     // Appearance Settings
     public AppTheme Theme { get; set; } = AppTheme.System;
 
@@ -52,6 +58,10 @@ public class AppSettings
             DefaultMode = this.DefaultMode,
             DefaultLanguage = this.DefaultLanguage,
             WritingStyle = this.WritingStyle.Clone(),
+            UserName = this.UserName,
+            UserPosition = this.UserPosition,
+            IncludeEmailSignature = this.IncludeEmailSignature,
+            CustomSignature = this.CustomSignature,
             Theme = this.Theme
         };
     }

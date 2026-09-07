@@ -113,6 +113,12 @@ public partial class SettingsWindow : Window
         ChkPreserveTechnicalTerms.IsChecked = s.WritingStyle.PreserveTechnicalTerms;
         TxtAdditionalInstructions.Text = s.WritingStyle.AdditionalInstructions;
 
+        // Personal profile and email signature
+        TxtUserName.Text = s.UserName;
+        TxtUserPosition.Text = s.UserPosition;
+        ChkIncludeEmailSignature.IsChecked = s.IncludeEmailSignature;
+        TxtCustomSignature.Text = s.CustomSignature;
+
         UpdateKeyStatusLabel();
     }
 
@@ -186,12 +192,13 @@ public partial class SettingsWindow : Window
 
     private void Tab_Checked(object sender, RoutedEventArgs e)
     {
-        if (PanelGeneral == null || PanelAiProvider == null || PanelWritingStyle == null ||
-            PanelAppearance == null || PanelPrivacy == null || PanelAbout == null)
+        if (PanelGeneral == null || PanelAiProvider == null || PanelEmailProfile == null ||
+            PanelWritingStyle == null || PanelAppearance == null || PanelPrivacy == null || PanelAbout == null)
             return;
 
         PanelGeneral.Visibility = (TabGeneral.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelAiProvider.Visibility = (TabAiProvider.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
+        PanelEmailProfile.Visibility = (TabEmailProfile.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelWritingStyle.Visibility = (TabWritingStyle.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelAppearance.Visibility = (TabAppearance.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelPrivacy.Visibility = (TabPrivacy.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
@@ -332,6 +339,12 @@ public partial class SettingsWindow : Window
         s.WritingStyle.Formality = ComboFormality.SelectedItem as string ?? "High";
         s.WritingStyle.PreserveTechnicalTerms = ChkPreserveTechnicalTerms.IsChecked == true;
         s.WritingStyle.AdditionalInstructions = TxtAdditionalInstructions.Text;
+
+        // Personal profile and email signature
+        s.UserName = TxtUserName.Text.Trim();
+        s.UserPosition = TxtUserPosition.Text.Trim();
+        s.IncludeEmailSignature = ChkIncludeEmailSignature.IsChecked == true;
+        s.CustomSignature = TxtCustomSignature.Text.Trim();
 
         // Auto-save any key currently in the field
         var enteredKey = _isKeyVisible ? KeyPlainTextBox.Text.Trim() : KeyPasswordBox.Password.Trim();

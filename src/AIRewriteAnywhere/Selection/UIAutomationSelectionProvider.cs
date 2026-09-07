@@ -140,9 +140,10 @@ public class UIAutomationSelectionProvider
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            _logger.LogWarning($"UI Automation selection query failed: {ex.Message}");
+            // UI Automation queries frequently fail with E_FAIL on non-supporting or transient controls.
+            // Silently swallowed to avoid polling log bloat.
         }
 
         return null;

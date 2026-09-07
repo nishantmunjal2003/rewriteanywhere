@@ -27,7 +27,7 @@ public partial class RewriteMenuWindow : Window
         {
             LanguageCombo.Items.Add(lang);
         }
-        LanguageCombo.SelectedIndex = 0;
+        LanguageCombo.SelectedIndex = -1;
     }
 
     public void ShowNear(SelectionInfo selection)
@@ -36,6 +36,7 @@ public partial class RewriteMenuWindow : Window
         _isProcessing = false;
         BusyOverlay.Visibility = Visibility.Collapsed;
         CustomInstructionText.Text = string.Empty;
+        LanguageCombo.SelectedIndex = -1;
 
         // 1. Get monitor working area and DPI scale for the target selection/cursor
         MonitorWorkAreaInfo monInfo;
@@ -91,7 +92,9 @@ public partial class RewriteMenuWindow : Window
 
     private async void LanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (LanguageCombo.SelectedItem is string selectedLanguage && _selection != null && IsLoaded && IsVisible && !_isProcessing)
+        if (LanguageCombo.SelectedItem is string selectedLanguage &&
+            !string.IsNullOrWhiteSpace(selectedLanguage) &&
+            _selection != null && IsLoaded && IsVisible && !_isProcessing)
         {
             await TriggerRewriteAsync(RewriteMode.Translate, null, selectedLanguage);
         }

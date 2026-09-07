@@ -103,6 +103,7 @@
                     <StackPanel Grid.Row="1">
                         <RadioButton x:Name="TabGeneral" Content="⚙  General" Style="{StaticResource TabNavButtonStyle}" IsChecked="True" Checked="Tab_Checked"/>
                         <RadioButton x:Name="TabAiProvider" Content="🤖  AI Provider &amp; Keys" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="TabEmailProfile" Content="📧  Email &amp; Profile" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
                         <RadioButton x:Name="TabWritingStyle" Content="✍  My Writing Style" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
                         <RadioButton x:Name="TabAppearance" Content="🎨  Appearance" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
                         <RadioButton x:Name="TabPrivacy" Content="🔒  Privacy &amp; Security" Style="{StaticResource TabNavButtonStyle}" Checked="Tab_Checked"/>
@@ -268,7 +269,86 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- 3. WRITING STYLE TAB -->
+                <!-- 3. EMAIL & PROFILE TAB -->
+                <ScrollViewer x:Name="PanelEmailProfile" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Email &amp; Personal Profile" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,6"/>
+                        <TextBlock Text="Provide your personal identity and position to inform email rewrites, and configure signature preferences." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,16"/>
+
+                        <!-- Personal Identity Card -->
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="👤 Personal Identity &amp; Role" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,0,0,4"/>
+                                <TextBlock Text="Provides sender context so the AI crafts authentic, suitably positioned emails." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,12"/>
+
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Full Name:" Style="{StaticResource ModernLabelStyle}"/>
+                                    <TextBox x:Name="TxtUserName"
+                                             Grid.Column="1"
+                                             Height="30"
+                                             FontSize="12"
+                                             Padding="8,4"
+                                             Background="#111827"
+                                             Foreground="#FFFFFF"
+                                             BorderBrush="#374151"
+                                             ToolTip="Your full name (e.g., Dr. Nishant Munjal)"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="140"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Position / Title:" Style="{StaticResource ModernLabelStyle}"/>
+                                    <TextBox x:Name="TxtUserPosition"
+                                             Grid.Column="1"
+                                             Height="30"
+                                             FontSize="12"
+                                             Padding="8,4"
+                                             Background="#111827"
+                                             Foreground="#FFFFFF"
+                                             BorderBrush="#374151"
+                                             ToolTip="Your job title or position (e.g., Lead AI Researcher / Managing Director)"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Email Signature Card -->
+                        <Border Background="#1F2937" CornerRadius="8" Padding="14" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="✍ Email Signature Settings" FontSize="14" FontWeight="SemiBold" Foreground="#F3F4F6" Margin="0,0,0,4"/>
+                                <TextBlock Text="Choose whether you want a signature included when writing or rewriting emails." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,12"/>
+
+                                <CheckBox x:Name="ChkIncludeEmailSignature" Margin="0,0,0,12" VerticalContentAlignment="Center" IsChecked="True">
+                                    <StackPanel>
+                                        <TextBlock Text="Include signature when writing / rewriting emails" Style="{StaticResource ModernLabelStyle}"/>
+                                        <TextBlock Text="When enabled, emails conclude with your sign-off, name, and position. When unchecked, signatures are omitted." Style="{StaticResource SubLabelStyle}"/>
+                                    </StackPanel>
+                                </CheckBox>
+
+                                <TextBlock Text="Custom Signature Block (Optional):" Style="{StaticResource ModernLabelStyle}" Margin="0,4,0,4"/>
+                                <TextBlock Text="Leave blank to automatically generate sign-off from Name &amp; Position, or provide a custom sign-off block below." Style="{StaticResource SubLabelStyle}" Margin="0,0,0,8"/>
+                                <TextBox x:Name="TxtCustomSignature"
+                                         Height="75"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Auto"
+                                         Background="#111827"
+                                         Foreground="#F3F4F6"
+                                         BorderBrush="#374151"
+                                         Padding="8"
+                                         FontSize="12"
+                                         ToolTip="Optional custom email signature block"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 4. WRITING STYLE TAB -->
                 <ScrollViewer x:Name="PanelWritingStyle" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0,0,10,0">
                         <TextBlock Text="My Writing Style" FontSize="18" FontWeight="Bold" Foreground="#F9FAFB" Margin="0,0,0,6"/>

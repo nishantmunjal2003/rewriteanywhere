@@ -10,6 +10,11 @@ public static class NativeMethods
     public const int WS_EX_TOPMOST = 0x00000008;
     public const int WS_EX_TOOLWINDOW = 0x00000080;
 
+    // Window Display & Focus Constants
+    public const int ASFW_ANY = -1;
+    public const int SW_RESTORE = 9;
+    public const int SW_SHOW = 5;
+
     // Hotkey modifiers
     public const uint MOD_ALT = 0x0001;
     public const uint MOD_CONTROL = 0x0002;
@@ -126,6 +131,12 @@ public static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern bool BringWindowToTop(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    public static extern bool AllowSetForegroundWindow(int dwProcessId);
 
     [DllImport("user32.dll")]
     public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);

@@ -157,11 +157,10 @@
                                Margin="6,0,8,0"/>
                     <ComboBox x:Name="LanguageCombo"
                               Grid.Column="1"
-                              Background="#27272A"
-                              Foreground="#FFFFFF"
-                              BorderBrush="#3F3F46"
+                              Tag="Select language..."
+                              Height="28"
                               FontSize="12"
-                              Height="26"
+                              Cursor="Hand"
                               SelectionChanged="LanguageCombo_SelectionChanged"/>
                 </Grid>
 

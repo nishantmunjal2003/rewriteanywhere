@@ -43,7 +43,38 @@ Rules:
                 break;
 
             case RewriteMode.Email:
-                sb.AppendLine("Rewrite as a well-structured, clear, polite, and professional email message. Maintain an appropriate courteous sign-off if present in original text.");
+                sb.AppendLine("Rewrite as a well-structured, clear, polite, and professional email message.");
+                if (!string.IsNullOrWhiteSpace(request.UserName) || !string.IsNullOrWhiteSpace(request.UserPosition))
+                {
+                    sb.AppendLine("Sender Identity Context:");
+                    if (!string.IsNullOrWhiteSpace(request.UserName))
+                        sb.AppendLine($"- Sender Name: {request.UserName}");
+                    if (!string.IsNullOrWhiteSpace(request.UserPosition))
+                        sb.AppendLine($"- Sender Position / Role: {request.UserPosition}");
+                    sb.AppendLine("Use this sender context to inform the perspective, tone, and authority of the email.");
+                }
+                if (request.IncludeEmailSignature)
+                {
+                    if (!string.IsNullOrWhiteSpace(request.CustomSignature))
+                    {
+                        sb.AppendLine($"Include this exact signature block at the end of the email:\n{request.CustomSignature}");
+                    }
+                    else if (!string.IsNullOrWhiteSpace(request.UserName) || !string.IsNullOrWhiteSpace(request.UserPosition))
+                    {
+                        var sigParts = new List<string>();
+                        if (!string.IsNullOrWhiteSpace(request.UserName)) sigParts.Add(request.UserName);
+                        if (!string.IsNullOrWhiteSpace(request.UserPosition)) sigParts.Add(request.UserPosition);
+                        sb.AppendLine($"Conclude the email with an appropriate courteous closing (e.g. 'Best regards,') followed by the sender's signature:\n{string.Join("\n", sigParts)}");
+                    }
+                    else
+                    {
+                        sb.AppendLine("Maintain an appropriate courteous sign-off if present in original text.");
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("Do NOT include any personal signature, sign-off name, or job title at the end. End the message cleanly after the body or with a general closing without any person's name or title.");
+                }
                 break;
 
             case RewriteMode.Friendly:

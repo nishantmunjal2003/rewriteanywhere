@@ -82,7 +82,7 @@ public class MockAIProvider : IAIProvider
             {
                 RewriteMode.Professional => "Dear Sir, I am writing to inform you that I will be unable to attend class tomorrow due to personal commitments. Please grant me leave for the day. Thank you for your understanding.",
                 RewriteMode.Academic => "Due to unavoidable personal obligations, I will be unable to attend tomorrow's scheduled session. I respectfully request an excused absence.",
-                RewriteMode.Email => "Subject: Absence Request - Class Attendance\n\nDear Sir,\n\nI am writing to formally request a leave of absence for tomorrow's class due to unforeseen personal obligations. I will ensure all coursework is reviewed promptly.\n\nSincerely,",
+                RewriteMode.Email => BuildMockEmailResponse("Subject: Absence Request - Class Attendance\n\nDear Sir,\n\nI am writing to formally request a leave of absence for tomorrow's class due to unforeseen personal obligations. I will ensure all coursework is reviewed promptly.", request),
                 RewriteMode.Friendly => "Hi Sir, I won't be able to make it to class tomorrow because of some personal work. Hope it's okay for me to take the day off. Thanks!",
                 RewriteMode.Polite => "Dear Sir, I kindly request your permission to be excused from tomorrow's class due to important personal matters. Thank you very much for your understanding.",
                 RewriteMode.Shorten => "I will be unable to attend class tomorrow due to personal reasons. Please grant me leave.",
@@ -135,7 +135,7 @@ public class MockAIProvider : IAIProvider
             RewriteMode.Improve => CapitalizeFirst(input) + (input.EndsWith('.') ? "" : "."),
             RewriteMode.Professional => $"With regards to your request: {input.TrimEnd('.')}.",
             RewriteMode.Academic => $"Empirical analysis indicates that {input.ToLowerInvariant().TrimEnd('.')}.",
-            RewriteMode.Email => $"Dear Team,\n\n{input}\n\nBest regards,",
+            RewriteMode.Email => BuildMockEmailResponse($"Dear Team,\n\n{input}", request),
             RewriteMode.Friendly => $"Hey! Just wanted to share: {input}",
             RewriteMode.Polite => $"Kindly note that {input.ToLowerInvariant().TrimEnd('.')}. Thank you.",
             RewriteMode.Shorten => input.Length > 20 ? input[..(input.Length / 2)] + "..." : input,
@@ -149,6 +149,29 @@ public class MockAIProvider : IAIProvider
             RewriteMode.Instagram => $"✨ Inspiration of the day:\n\n{input}\n\nDouble tap if this resonates with you! 👇\n\n#DailyInspiration #Mindset #Vibes #Creativity",
             _ => input
         };
+    }
+
+    private static string BuildMockEmailResponse(string body, RewriteRequest request)
+    {
+        if (!request.IncludeEmailSignature)
+        {
+            return body;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.CustomSignature))
+        {
+            return $"{body}\n\n{request.CustomSignature}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UserName) || !string.IsNullOrWhiteSpace(request.UserPosition))
+        {
+            var sigParts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(request.UserName)) sigParts.Add(request.UserName);
+            if (!string.IsNullOrWhiteSpace(request.UserPosition)) sigParts.Add(request.UserPosition);
+            return $"{body}\n\nSincerely,\n{string.Join("\n", sigParts)}";
+        }
+
+        return $"{body}\n\nSincerely,";
     }
 
     private static string CapitalizeFirst(string s)

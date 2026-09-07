@@ -176,4 +176,24 @@ public static class DisplayHelper
 
         return new Point(targetX, targetY);
     }
+
+    public static void CenterOnActiveMonitor(Window window)
+    {
+        if (window == null) return;
+
+        var monitorInfo = GetMonitorInfoForRect(Rect.Empty);
+        var workArea = monitorInfo.WorkAreaDip;
+
+        double width = window.Width;
+        if (double.IsNaN(width) || width <= 0) width = window.ActualWidth;
+        if (double.IsNaN(width) || width <= 0) width = 800;
+
+        double height = window.Height;
+        if (double.IsNaN(height) || height <= 0) height = window.ActualHeight;
+        if (double.IsNaN(height) || height <= 0) height = 600;
+
+        window.WindowStartupLocation = WindowStartupLocation.Manual;
+        window.Left = workArea.Left + Math.Max(0, (workArea.Width - width) / 2.0);
+        window.Top = workArea.Top + Math.Max(0, (workArea.Height - height) / 2.0);
+    }
 }

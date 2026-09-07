@@ -9,6 +9,10 @@ public class RewriteRequest
     public string? TargetLanguage { get; set; }
     public string? CustomInstruction { get; set; }
     public WritingStyleProfile? WritingStyle { get; set; }
+    public string? UserName { get; set; }
+    public string? UserPosition { get; set; }
+    public bool IncludeEmailSignature { get; set; } = true;
+    public string? CustomSignature { get; set; }
 
     public RewriteRequest() { }
 
