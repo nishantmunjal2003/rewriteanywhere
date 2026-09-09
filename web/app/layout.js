@@ -1,5 +1,5 @@
 import './globals.css';
-import ThemeToggle from '../components/ThemeToggle';
+import Navbar from '../components/Navbar';
 
 export const metadata = {
   metadataBase: new URL('https://rewriteanywhere.nishantmunjal.com'),
@@ -202,35 +202,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <nav className="navbar" aria-label="Main Navigation">
-          <div className="container nav-container">
-            <a href="/" className="logo" aria-label="AI Rewrite Anywhere Home">
-              <div className="logo-icon">⚡</div>
-              <span>AI Rewrite Anywhere</span>
-            </a>
-
-            <ul className="nav-links">
-              <li><a href="/#features" className="nav-link">Features</a></li>
-              <li><a href="/#simulator" className="nav-link">Live Demo</a></li>
-              <li><a href="/#pricing" className="nav-link">Pricing</a></li>
-              <li><a href="/how-to-use" className="nav-link">How to Use & API Keys</a></li>
-              <li><a href="/support" className="nav-link">Support</a></li>
-            </ul>
-
-            <div className="nav-actions">
-              <ThemeToggle />
-              <span className="badge badge-windows">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.401H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
-                </svg>
-                Windows Only
-              </span>
-              <a href="/#pricing" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '0.9rem' }}>
-                Buy License ($19 / ₹2,000)
-              </a>
-            </div>
-          </div>
-        </nav>
+        <Navbar />
 
         <main>{children}</main>
 
@@ -245,9 +217,14 @@ export default function RootLayout({ children }) {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '320px', marginBottom: '16px' }}>
                   The universal Windows desktop assistant that brings state-of-the-art AI rewriting to every application on your PC.
                 </p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <span className="badge badge-windows">Windows 10 & 11 (64-bit)</span>
-                  <span className="badge badge-guarantee">14-Day Money-Back Guarantee</span>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className="badge badge-windows" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.401H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.95-1.801"/>
+                    </svg>
+                    Windows Only &bull; Windows 10 & 11 (64-bit)
+                  </span>
+                  <span className="badge badge-guarantee">🛡️ 14-Day Money-Back Guarantee</span>
                 </div>
               </div>
 
