@@ -1,0 +1,71 @@
+# AI Rewrite Anywhere — Comprehensive Product & Technical Documentation
+
+## 1. Product Identification
+- **Name**: AI Rewrite Anywhere
+- **Developer / Creator**: Nishant Munjal (https://nishantmunjal.com)
+- **Official Domain**: https://rewriteanywhere.nishantmunjal.com
+- **Target Platform**: Microsoft Windows 10 (version 19041+) and Windows 11 (64-bit)
+- **Primary Category**: Desktop Productivity & AI Text Processing
+- **License Type**: Lifetime Commercial License ($19 USD / ₹2,000 INR one-time payment)
+
+## 2. Core Architecture & Philosophy
+AI Rewrite Anywhere eliminates the friction of switching browser tabs or copy-pasting text back and forth between desktop software and web-based AI chats.
+
+### 2.1 The Bring-Your-Own-Key (BYOK) Advantage
+Most cloud AI writing extensions charge $12 to $30 every month to maintain a hosted proxy server. AI Rewrite Anywhere operates locally on the user's computer:
+1. Direct API Connections: Prompts travel directly from the user's PC to their chosen provider (Google Cloud AI, OpenAI, or Anthropic).
+2. Zero Intermediary Servers: No corporate proxy intercepts, caches, or inspects user drafts.
+3. Radical Cost Reduction: Users can utilize Google Gemini's free tier (1,500 requests/day for 100% free), reducing ongoing software spend to $0.00.
+
+### 2.2 Security & Data Privacy
+- **Windows DPAPI**: All stored API credentials and license tokens are encrypted using the Windows Data Protection API (`System.Security.Cryptography.ProtectedData`). Keys cannot be extracted by standard malware or copied across machines.
+- **Zero Telemetry**: No logging of keystrokes, highlighted text, prompts, or rewritten outputs.
+- **Hardware Binding**: Licenses are verified against a local cryptographic hash of CPU and motherboard serials (HWID).
+
+## 3. How It Works
+1. **Highlight Text**: The user selects any text string inside any Windows desktop software (browser, email client, chat app, document editor, terminal).
+2. **Trigger**:
+   - Keyboard: Press `Ctrl + Shift + R` (customizable).
+   - Mouse: Click the unobtrusive glowing floating assistant icon that appears near the cursor.
+3. **Capture & Safety Snapshot**:
+   - The original clipboard state is preserved in volatile memory.
+   - Text is extracted via Win32 UI Automation or fallback synthetic copy.
+4. **AI Transformation**:
+   - The selected model (Gemini, OpenAI, or Claude) processes the text according to the selected tone preset or custom prompt.
+5. **In-Place Replacement**:
+   - The rewritten text replaces the highlighted selection immediately in the target application.
+   - The user's previous clipboard contents are restored within milliseconds.
+
+## 4. Supported AI Models
+- **Google Gemini**:
+  - `gemini-2.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3.5-flash`, `gemini-3.7-flash`, `gemini-pro-latest`
+  - 100% Free tier available via Google AI Studio (aistudio.google.com).
+- **OpenAI**:
+  - `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `gpt-3.5-turbo`
+  - Pay-as-you-go via OpenAI Platform.
+- **Anthropic Claude**:
+  - `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022`, `claude-3-opus-20240229`
+  - Pay-as-you-go via Anthropic Console.
+
+## 5. Comparison Matrix
+| Feature | AI Rewrite Anywhere | Grammarly Premium | ChatGPT Plus |
+|---|---|---|---|
+| Price | $19 / ₹2,000 (Lifetime) | $144 / year ($12/mo) | $240 / year ($20/mo) |
+| In-Place Desktop Replacement | Yes (All Windows Apps) | Limited Browser/Word | No (Requires Tab Switch) |
+| Model Freedom | Gemini, OpenAI, Claude | Single Proprietary | OpenAI Only |
+| Free AI Tier Support | Yes (Gemini Free Tier) | No | No |
+| Privacy Guarantee | DPAPI Local Encryption | Cloud Stored | Cloud Retained |
+| Refund Guarantee | 14-Day 100% Unconditional | Non-refundable | Non-refundable |
+
+## 6. Frequently Asked Questions (FAQs)
+**Q: Does AI Rewrite Anywhere work on macOS or Linux?**
+A: No. AI Rewrite Anywhere is engineered specifically for Windows 10 & 11 (64-bit) using Win32 API hooks and Windows UI Automation.
+
+**Q: Can I transfer my license to a new PC?**
+A: Yes. Each license covers 1 active PC at a time. If you upgrade, replace, or reinstall Windows on your computer, support@rewriteanywhere.com will reset your machine binding immediately.
+
+**Q: Do I have to pay monthly subscriptions for AI?**
+A: No. AI Rewrite Anywhere uses a BYOK architecture. Using Google's free Gemini API tier, most users spend $0.00 each month.
+
+**Q: How does the 14-day refund guarantee work?**
+A: If the app does not meet your expectations, email support@rewriteanywhere.com with your license key within 14 days for a full, unconditional refund.

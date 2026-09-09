@@ -17,7 +17,7 @@ public class AppSettings
     public bool EnablePowerEfficiency { get; set; } = true;
 
     // AI Provider Settings
-    public ProviderType ActiveProvider { get; set; } = ProviderType.OpenAI;
+    public ProviderType ActiveProvider { get; set; } = ProviderType.Gemini;
     public string OpenAIModel { get; set; } = Constants.DefaultModels.OpenAI;
     public string GeminiModel { get; set; } = Constants.DefaultModels.Gemini;
     public string ClaudeModel { get; set; } = Constants.DefaultModels.Claude;
@@ -33,6 +33,12 @@ public class AppSettings
     public string UserPosition { get; set; } = string.Empty;
     public bool IncludeEmailSignature { get; set; } = true;
     public string CustomSignature { get; set; } = string.Empty;
+
+    // License Settings
+    public string LicenseKey { get; set; } = string.Empty;
+    public bool IsLicenseActive { get; set; } = false;
+    public string LicenseActivatedAt { get; set; } = string.Empty;
+    public string LicenseMachineId { get; set; } = string.Empty;
 
     // Appearance Settings
     public AppTheme Theme { get; set; } = AppTheme.System;
@@ -62,6 +68,10 @@ public class AppSettings
             UserPosition = this.UserPosition,
             IncludeEmailSignature = this.IncludeEmailSignature,
             CustomSignature = this.CustomSignature,
+            LicenseKey = this.LicenseKey,
+            IsLicenseActive = this.IsLicenseActive,
+            LicenseActivatedAt = this.LicenseActivatedAt,
+            LicenseMachineId = this.LicenseMachineId,
             Theme = this.Theme
         };
     }

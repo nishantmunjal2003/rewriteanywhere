@@ -18,13 +18,15 @@ public partial class SettingsWindow : Window
     private readonly ISecureStorage _secureStorage;
     private readonly IAIProviderFactory _providerFactory;
     private readonly StartupManager _startupManager;
+    private readonly ILicenseService _licenseService;
     private bool _isKeyVisible = false;
 
     public SettingsWindow(
         ISettingsService settingsService,
         ISecureStorage secureStorage,
         IAIProviderFactory providerFactory,
-        StartupManager startupManager)
+        StartupManager startupManager,
+        ILicenseService? licenseService = null)
     {
         InitializeComponent();
 
@@ -32,6 +34,7 @@ public partial class SettingsWindow : Window
         _secureStorage = secureStorage;
         _providerFactory = providerFactory;
         _startupManager = startupManager;
+        _licenseService = licenseService ?? new LicenseService(_settingsService, _secureStorage, new Logging.FileLogger());
 
         PopulateDropdowns();
         LoadSettingsIntoUI();
@@ -56,7 +59,8 @@ public partial class SettingsWindow : Window
             ComboShortcutKey.Items.Add(key);
         }
 
-        foreach (var provider in Enum.GetValues<ProviderType>())
+        // Only display real, user-facing AI providers (Mock provider removed)
+        foreach (var provider in new[] { ProviderType.Gemini, ProviderType.OpenAI, ProviderType.Claude })
         {
             ComboActiveProvider.Items.Add(provider);
         }
@@ -118,6 +122,11 @@ public partial class SettingsWindow : Window
         TxtUserPosition.Text = s.UserPosition;
         ChkIncludeEmailSignature.IsChecked = s.IncludeEmailSignature;
         TxtCustomSignature.Text = s.CustomSignature;
+
+        // License
+        TxtHardwareId.Text = _licenseService.MachineId;
+        TxtLicenseKey.Text = s.LicenseKey;
+        UpdateLicenseBadge();
 
         UpdateKeyStatusLabel();
     }
@@ -193,7 +202,8 @@ public partial class SettingsWindow : Window
     private void Tab_Checked(object sender, RoutedEventArgs e)
     {
         if (PanelGeneral == null || PanelAiProvider == null || PanelEmailProfile == null ||
-            PanelWritingStyle == null || PanelAppearance == null || PanelPrivacy == null || PanelAbout == null)
+            PanelWritingStyle == null || PanelAppearance == null || PanelPrivacy == null ||
+            PanelLicense == null || PanelAbout == null)
             return;
 
         PanelGeneral.Visibility = (TabGeneral.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
@@ -202,7 +212,71 @@ public partial class SettingsWindow : Window
         PanelWritingStyle.Visibility = (TabWritingStyle.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelAppearance.Visibility = (TabAppearance.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelPrivacy.Visibility = (TabPrivacy.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
+        PanelLicense.Visibility = (TabLicense.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
         PanelAbout.Visibility = (TabAbout.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void UpdateLicenseBadge()
+    {
+        if (_licenseService.IsLicensed)
+        {
+            LicenseStatusBadge.Text = "✓ Active (Single-PC Lifetime License)";
+            LicenseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129));
+            TxtLicenseKey.IsReadOnly = true;
+            BtnActivateLicense.Visibility = Visibility.Collapsed;
+            BtnDeactivateLicense.Visibility = Visibility.Visible;
+            BtnDeactivateLicense.IsEnabled = true;
+        }
+        else
+        {
+            LicenseStatusBadge.Text = "⚠ Unactivated";
+            LicenseStatusBadge.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11));
+            TxtLicenseKey.IsReadOnly = false;
+            BtnActivateLicense.Visibility = Visibility.Visible;
+            BtnActivateLicense.IsEnabled = true;
+            BtnDeactivateLicense.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private async void ActivateLicense_Click(object sender, RoutedEventArgs e)
+    {
+        var key = TxtLicenseKey.Text.Trim();
+        LicenseFeedbackText.Text = "Validating and activating license...";
+        LicenseFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(156, 163, 175));
+        BtnActivateLicense.IsEnabled = false;
+
+        var result = await _licenseService.ActivateLicenseAsync(key);
+        if (result.Success)
+        {
+            LicenseFeedbackText.Text = $"✓ {result.Message}";
+            LicenseFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129));
+        }
+        else
+        {
+            LicenseFeedbackText.Text = $"✗ {result.Message}";
+            LicenseFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(239, 68, 68));
+            BtnActivateLicense.IsEnabled = true;
+        }
+
+        UpdateLicenseBadge();
+    }
+
+    private void DeactivateLicense_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = System.Windows.MessageBox.Show(
+            "Are you sure you want to deactivate your license on this machine?\n\nYou can reactivate it anytime on this or another machine using your license key.",
+            "Deactivate License",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+            return;
+
+        _licenseService.DeactivateLicense();
+        LicenseFeedbackText.Text = "License deactivated on this machine.";
+        LicenseFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11));
+        TxtLicenseKey.Text = string.Empty;
+        UpdateLicenseBadge();
     }
 
     private void ComboActiveProvider_SelectionChanged(object sender, SelectionChangedEventArgs e)

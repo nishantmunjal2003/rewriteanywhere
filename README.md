@@ -1,214 +1,162 @@
-# AI Rewrite Anywhere (`rewriteanywhere`) ✍️✨
+# AI Rewrite Anywhere (`rewriteanywhere`) ✍️⚡
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%20Windows%2011-blue.svg)](https://microsoft.com/windows)
-[![.NET](https://img.shields.io/badge/.NET-8.0%20Desktop%20Runtime-purple.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
-[![Architecture](https://img.shields.io/badge/Architecture-x64-success.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-43%20Passing-brightgreen.svg)]()
+[![Environment](https://img.shields.io/badge/Environment-Windows%20Only%20(10%20%7C%2011%20x64)-0078D6?logo=windows)](https://microsoft.com/windows)
+[![Pricing](https://img.shields.io/badge/Pricing-%2419%20USD%20%7C%20%E2%82%B92%2C000%20INR%20(Lifetime)-10b981)](#-commercial-pricing--14-day-guarantee)
+[![License Policy](https://img.shields.io/badge/Protection-1%20Active%20PC%20Secret%20Key-6366f1)](#-secret-key-license-protection--anti-piracy)
+[![Guarantee](https://img.shields.io/badge/Guarantee-14--Day%20Money--Back-emerald)](#-14-day-money-back-guarantee)
+[![Runtime](https://img.shields.io/badge/.NET-8.0%20Desktop%20Runtime-purple.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![Tests](https://img.shields.io/badge/Tests-70%20Passing-brightgreen.svg)]()
 
-> **Select text anywhere across Windows → Click ✨ or press `Ctrl + Shift + R` → Instant AI Rewrite & In-Place Replacement.**
-
-**AI Rewrite Anywhere** (`rewriteanywhere`) is a lightweight, ultra-responsive Windows desktop utility that integrates state-of-the-art AI rewriting natively into any application across your entire OS. Eliminate the tedious cycle of copying text, switching windows to a browser, waiting on a web chat prompt, copying the result, and pasting it back.
-
----
-
-## ⚡ Works Everywhere in Windows
-
-Seamlessly enhances text selection across:
-- **Productivity**: Microsoft Word, Google Docs, Excel, PowerPoint, OneNote, Microsoft Notepad
-- **Browsers**: Google Chrome, Microsoft Edge, Brave, Mozilla Firefox, Opera
-- **Communication**: WhatsApp Desktop, Microsoft Teams, Slack, Telegram, Discord, Zoom Chat
-- **Web Mail & Social**: Gmail, Outlook Web, LinkedIn, X / Twitter, Reddit, Notion
-- **Code & Terminals**: VS Code, Sublime Text, Visual Studio, Windows Terminal, Notepad++
+> **⚠️ WINDOWS ONLY NOTICE:** AI Rewrite Anywhere is engineered exclusively for **Windows 10 and Windows 11 (64-bit)**. It is built natively with C# and deep Windows Win32 / UI Automation hooks for in-place text replacement in any Windows software. (macOS and Linux are not supported).
 
 ---
 
-## 🚀 Key Features
+## ⚡ What is AI Rewrite Anywhere?
 
-* **In-Place Replacement**: Replaces your highlighted text with the refined version instantly.
-* **Non-Activating Floating Button (✨)**: A subtle, rounded floating button appears right near your active text cursor without stealing focus or interrupting your typing flow.
-* **Customizable Global Hotkey**: Trigger anywhere using default **`Ctrl + Shift + R`** (fully configurable in settings).
-* **High-DPI & Multi-Monitor Aware**: Per-Monitor V2 DPI scaling ensures crystal-clear rendering across 4K, 1440p, 1080p, and multi-display setups with mixed scaling factors.
-* **Robust Hybrid Selection Engine**:
-  * Primary: **Windows UI Automation (UIA)** text pattern detection.
-  * Fallback: Non-destructive, atomic clipboard capture.
-* **Strict Clipboard Preservation**: Backs up and restores your clipboard state (text, rich text, images, and file lists) so your clipboard history remains completely untouched.
-* **Strict Clipboard Preservation**: Backs up and restores your clipboard state (text, rich text, images, and file lists) so your clipboard history remains completely untouched.
-* **15 Pre-Tuned Rewrite Modes**:
-  | Mode | Icon | Description |
-  | :--- | :---: | :--- |
-  | **Improve** | ✨ | Enhances grammar, flow, cadence, and overall clarity. |
-  | **Professional** | 💼 | Crisp, articulate, and executive business tone. |
-  | **Academic** | 🎓 | Rigorous academic English with zero hallucinated claims. |
-  | **Email** | 📧 | Courteous, structured, and goal-oriented workplace email. |
-  | **Friendly** | 😊 | Warm, empathetic, and natural conversational tone. |
-  | **Polite** | 🙏 | Diplomatic, respectful, and considerate phrasing. |
-  | **Shorten** | ✂️ | Condenses verbosity while strictly retaining core meaning. |
-  | **Expand** | ➕ | Adds helpful depth, context, and nuance without filler. |
-  | **Grammar Fix** | 🔤 | Precise punctuation and spelling corrections with minimal edits. |
-  | **Translate** | 🌐 | High-fidelity translation across 10+ languages (EN, ES, FR, DE, HI, JA, ZH, etc.). |
-  | **Custom Prompt** | ✍️ | Type any custom prompt (e.g., *"Convert to bullet points"*, *"Make humorous"*). |
-  | **LinkedIn Post** | 💼 | Thought leadership format with strong opening hook, clean spacing, takeaways, and 3-5 hashtags. |
-  | **X / Twitter Post** | 🐦 | Punchy, ultra-concise hook under 280 characters with high viral engagement. |
-  | **Facebook Post** | 👥 | Warm, community-friendly conversational tone with an open-ended discussion question. |
-  | **Instagram Caption** | 📸 | Captivating above-the-fold hook, aesthetic line breaks, pacing emojis, and targeted hashtags. |
-* **Intelligent Power Efficiency**: Adaptive background polling with Win32 `GetLastInputInfo` idle gating, zero per-tick allocations, and laptop battery awareness ensuring ~0.0% idle CPU utilization.
-* **Personalized Writing Style Profile**: Set your preferred tone, length, formality, and technical glossary rules to be applied automatically across all rewrites.
-* **Instant Undo (`Ctrl + Z`)**: Revert any rewrite with a single keystroke or from the system tray menu.
-* **Side-by-Side Preview (Optional)**: Review a diff of original vs. proposed text before applying changes.
+**AI Rewrite Anywhere** is an ultra-fast, native Windows desktop utility that brings cutting-edge AI rewriting into **every text box, browser, email client, and document** on your computer. 
+
+Highlight any text → press **`Ctrl + Shift + R`** or click the subtle glowing floating button → **your writing transforms in place instantly.**
+
+No more copying text, opening browser tabs, switching back and forth, or paying recurring monthly cloud fees!
 
 ---
 
-## 🔒 Security & Privacy (BYOK)
+## 💰 Commercial Pricing & 14-Day Guarantee
 
-WriteAnywhere is engineered from the ground up for strict personal privacy:
+Stop paying $15–$30/month subscriptions for Grammarly, ChatGPT Plus, or copywriting tools. AI Rewrite Anywhere is a simple, transparent **one-time purchase with lifetime access**:
 
-1. **Bring Your Own Key (BYOK)**: Connect your own API keys directly to **OpenAI**, **Google Gemini**, or **Anthropic Claude**.
-2. **Windows DPAPI Hardware Encryption**: All API keys are encrypted with Windows Data Protection API (`ProtectedData`), tied to your Windows user account. Plaintext credentials are **never** stored on disk or in memory dumps.
-3. **Zero Intermediary Servers**: Network requests travel directly from your machine to the respective AI provider's official HTTPS endpoints.
-4. **Zero Diagnostic Data Logging**: Diagnostic log files scrub all user text and exceptions; prompt content is never logged.
-5. **Offline Mock Mode**: Includes a local mock provider for testing, demos, or air-gapped environments without an active internet connection.
+| Region | One-Time Price | Included Value |
+| :--- | :---: | :--- |
+| **International** | **$19 USD** | Lifetime license for 1 active Windows PC, all v1.x updates, free Gemini guide |
+| **India Special** | **₹2,000 INR** | Lifetime license for 1 active Windows PC, all v1.x updates, free Gemini guide |
 
----
-
-## 📦 Supported AI Providers & Models
-
-* **Google Gemini**:
-  * `gemini-3.6-flash` (Recommended Default)
-  * `gemini-flash-latest`
-  * `gemini-3.1-flash-lite` (Ultra-low latency)
-  * `gemini-pro-latest`
-* **OpenAI**:
-  * `gpt-4o-mini`
-  * `gpt-4o`
-  * `gpt-4-turbo`
-* **Anthropic Claude**:
-  * `claude-3-5-haiku-20241022`
-  * `claude-3-5-sonnet-20241022`
-* **Mock Provider**: Built-in offline testing engine (no API key required).
+### 🛡️ 14-Day Money-Back Guarantee
+We stand 100% behind our software. If AI Rewrite Anywhere does not save you hours every week, simply email **support@rewriteanywhere.com** within 14 days of purchase with your license key or order details, and we will issue a full, unconditional refund immediately.
 
 ---
 
-## 📥 Installation
+## 🔒 Secret Key License Protection & Anti-Piracy
 
-### Option 1: Windows Setup Installer (Recommended)
-1. Grab the latest installer from the `installer/` directory:  
-   **[`installer/AI-Rewrite-Anywhere-Setup.exe`](installer/AI-Rewrite-Anywhere-Setup.exe)**
-2. Run the installer and follow the setup wizard.
-3. Select optional preferences:
-   - ✅ *Create a desktop shortcut*
-   - ✅ *Start automatically with Windows*
-4. Click **Finish**. The app will start running silently in the Windows system tray.
+To ensure fair commercial licensing, each purchase includes a unique secret license key:
 
-### Option 2: Standalone Release Binary
-Directly run the compiled release executable located in `dist/`:
 ```text
-dist\AIRewriteAnywhere.exe
+ARW-XXXX-XXXX-XXXX-XXXX
 ```
 
----
+### 1 Active User / 1 Device Binding Rule:
+* Each license is strictly bound to **one (1) active Windows PC** using a non-reversible cryptographic Hardware ID (`HWID-XXXX-XXXX-XXXX-XXXX`) generated from your system's `MachineGuid` and hardware fingerprint.
+* **More than one active license will not work:** Attempting to activate the same key on a second computer will be automatically rejected.
+* **Upgrading your PC?** If you buy a new computer or reinstall Windows, simply email `support@rewriteanywhere.com` with your license key and our team will reset your active device binding at no extra charge.
 
-## ⚙️ Quick Start Guide
-
-1. **Open Settings**: Right-click the **✨** icon in your system tray (bottom-right taskbar) and select **⚙ Settings...**.
-2. **Configure Provider**:
-   - Select your preferred AI Provider (**Google Gemini**, **OpenAI**, or **Anthropic Claude**).
-   - Enter your API key and choose your preferred model.
-   - Click **Test Connection** to verify key validity.
-   - Click **Save & Close**.
-3. **Start Rewriting**:
-   - Highlight any text in any program (e.g. an email draft in Chrome).
-   - Press **`Ctrl + Shift + R`** or click the floating **✨** button.
-   - Choose a mode (e.g. **Professional**).
-   - Watch the text transform in place!
-
----
-
-## 🛠️ Building from Source
-
-### Prerequisites
-* Windows 10/11 x64
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or newer
-* [Inno Setup 6](https://jrsoftware.org/isinfo.php) (optional, for compiling the setup `.exe`)
-
-### Commands
+### How Administrators Generate License Keys:
+For customer orders and sales fulfillment, run the included key generation script:
 
 ```powershell
-# 1. Clone the repository
-git clone https://github.com/nishantmunjal2003/rewriteanywhere.git
-cd rewriteanywhere
+# Generate a single license key
+node scripts/generate-license.js
 
-# 2. Restore NuGet dependencies
-dotnet restore
+# Generate multiple keys in bulk (e.g. 10 keys)
+node scripts/generate-license.js --count 10
 
-# 3. Build Release configuration
+# Generate an India-tier license assigned to a customer email
+node scripts/generate-license.js --tier "inr" --email "customer@example.com"
+```
+Generated keys are automatically cataloged in `web/data/licenses.json`.
+
+---
+
+## 🔑 Step-by-Step Manual: How to Grab Your API Keys
+
+AI Rewrite Anywhere uses a **Bring-Your-Own-Key (BYOK)** architecture. You have complete freedom over which AI model you use. All keys are encrypted locally using **Windows DPAPI** (`ProtectedData`)—plaintext keys never leave your PC.
+
+*(Notice: Mock/fake keys have been removed from user-facing dropdowns; only genuine, high-performance AI engines are provided).*
+
+### 🟢 Option 1: Google Gemini (Recommended – 100% Free Tier)
+*Google AI Studio provides a free API tier with up to 1,500 requests per day at zero charge!*
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Sign in with your Google account.
+3. Click **"Create API key"** and choose or create a project.
+4. Copy the generated key (starts with `AIzaSy...`).
+5. Open AI Rewrite Anywhere **Settings → AI Provider**, select **Google Gemini**, paste your key, and click **Save Settings**.
+
+### 🔵 Option 2: OpenAI (GPT-4o / GPT-4o-mini)
+1. Go to [OpenAI Platform API Keys](https://platform.openai.com/api-keys).
+2. Sign in or create an OpenAI developer account.
+3. Click **"Create new secret key"**, give it a name (e.g., `RewriteAnywhere`), and copy the key (starts with `sk-proj-...`).
+4. In AI Rewrite Anywhere Settings, select **OpenAI**, paste your key, choose your preferred model (`gpt-4o` or `gpt-4o-mini`), and save.
+
+### 🟣 Option 3: Anthropic Claude (Claude 3.5 Sonnet / Haiku)
+1. Go to [Anthropic Console](https://console.anthropic.com/settings/keys).
+2. Sign in or create an account.
+3. Click **"Create Key"**, name it, and copy your secret key (starts with `sk-ant-...`).
+4. In AI Rewrite Anywhere Settings, select **Anthropic Claude**, paste your key, choose `claude-3-5-sonnet` or `claude-3-5-haiku`, and save.
+
+---
+
+## 🌐 Next.js Web App & Commercial Portal
+
+The project includes a state-of-the-art Next.js web application located in `web/`:
+
+* **Landing Sales Page (`/`)**: Features hero with Windows badges, live interactive rewrite simulator, subscription comparison table ($19 vs $144+/yr), pricing card with USD ($19) / INR (₹2,000) toggle, and FAQ.
+* **How-to-Use Guide (`/how-to-use`)**: Step-by-step visual installation, license activation, and API key guide.
+* **Customer Support (`/support`)**: Helpdesk contact form, hardware license reset requests, and support channels.
+* **Terms of Service (`/terms`)**: Commercial licensing rules, 1-PC policy, and 14-day refund terms.
+* **Privacy Policy (`/privacy`)**: Detailed privacy commitments, DPAPI security, and zero-telemetry architecture.
+* **Activation API (`/api/license/activate`)**: Hardware-bound license verification and activation endpoint.
+* **Admin Licensing Portal (`/admin`)**: Visual web dashboard to issue commercial keys, search by HWID or key, release hardware locks, and revoke keys (Passcode: `admin2026`).
+
+### Running the Web Application:
+```powershell
+cd web
+npm install
+npm run dev     # Starts development server at http://localhost:3000
+npm run build   # Builds production Next.js bundle
+```
+
+---
+
+## 🚀 Native Windows Desktop Features
+
+* **Universal In-Place Replacement**: Works in Chrome, Edge, Slack, Teams, WhatsApp, Word, Outlook, Notion, Discord, Notepad, and VS Code.
+* **Dual Activation Modes**:
+  * **Global Hotkey**: Press **`Ctrl + Shift + R`** anywhere.
+  * **Floating Assist Button (✨)**: Non-activating, draggable assist button appears near selected text.
+* **Strict Clipboard Preservation**: Backs up and restores original clipboard contents within milliseconds.
+* **Personal Profile & Email Signatures**: Save your name, title/position, and custom email signature. When drafting or answering emails, the AI automatically integrates your professional context!
+* **15 Pre-Tuned Modes**: Improve, Professional, Academic, Email, Friendly, Polite, Shorten, Expand, Grammar Fix, Translate, LinkedIn Post, X/Twitter Post, Facebook Post, Instagram Caption, and Custom Prompt.
+* **Intelligent Power Efficiency**: 0.0% idle CPU utilization with Windows `GetLastInputInfo` idle gating.
+* **Per-Monitor V2 DPI Scaling**: Sharp, crystal-clear typography on 4K, 1440p, and multi-monitor setups.
+
+---
+
+## 📥 Desktop App Installation
+
+### Option 1: Windows Setup Installer (Recommended)
+1. Run the installer: **[`installer/AI-Rewrite-Anywhere-Setup.exe`](installer/AI-Rewrite-Anywhere-Setup.exe)**
+2. Follow the setup wizard and launch the app.
+3. Open **Settings → License & Protection**, enter your `ARW-XXXX-XXXX-XXXX-XXXX` license key, and click **Activate License**.
+
+### Option 2: Build from Source (.NET 8.0 SDK required)
+```powershell
+# Build solution
 dotnet build -c Release
 
-# 4. Run automated test suite (43 tests)
-dotnet test -v normal
+# Run automated tests (70 unit and integration tests)
+dotnet test --filter "FullyQualifiedName!~LiveApplicationIntegrationTests"
 
-# 5. Publish self-contained or framework-dependent distribution
-dotnet publish src/AIRewriteAnywhere/AIRewriteAnywhere.csproj -c Release -r win-x64 --self-contained false -o dist
-
-# 6. (Optional) Build Inno Setup Installer
-powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1
+# Build self-contained release installer
+powershell -ExecutionPolicy Bypass -File build-installer.ps1
 ```
 
 ---
 
-## 📐 Architecture Overview
+## 🤝 Support & Legal
 
-```
-                          ┌───────────────────────────┐
-                          │   Active Windows Window   │
-                          │ (Chrome, Word, WhatsApp)  │
-                          └─────────────┬─────────────┘
-                                        │ Selection Detected
-                                        ▼
-┌───────────────────────┐        ┌────────────────────────────┐
-│   Global Hotkey /     │───────▶│ WindowsIntegration Layer   │
-│   Floating ✨ Button  │        │ (UIA / Clipboard Fallback) │
-└───────────────────────┘        └─────────────┬──────────────┘
-                                               │ Extracted Text
-                                               ▼
-┌───────────────────────┐        ┌────────────────────────────┐
-│   Windows DPAPI       │───────▶│ Core Orchestrator          │
-│   Key Vault (Encrypted│        │ (PromptBuilder + Style)    │
-└───────────────────────┘        └─────────────┬──────────────┘
-                                               │ Structured Prompt
-                                               ▼
-                                 ┌────────────────────────────┐
-                                 │ AI Provider (Direct HTTPS) │
-                                 │ Gemini / OpenAI / Claude   │
-                                 └─────────────┬──────────────┘
-                                               │ Rewritten Text
-                                               ▼
-                                 ┌────────────────────────────┐
-                                 │ Text Replacement Service   │
-                                 │ (Atomic in-place swap)     │
-                                 └────────────────────────────┘
-```
-
-For complete technical specifications, see [ARCHITECTURE.md](ARCHITECTURE.md).
+* **Support Email**: [support@rewriteanywhere.com](mailto:support@rewriteanywhere.com)
+* **Sales Inquiries**: [sales@rewriteanywhere.com](mailto:sales@rewriteanywhere.com)
+* **Website**: [https://rewriteanywhere.com](https://rewriteanywhere.com)
+* **Terms of Service**: [Terms](web/app/terms/page.js)
+* **Privacy Policy**: [Privacy](web/app/privacy/page.js)
 
 ---
-
-## 📄 Documentation
-
-* [ARCHITECTURE.md](ARCHITECTURE.md) — Deep dive into the threading model, UIA providers, and event pipeline.
-* [PRIVACY.md](PRIVACY.md) — Security disclosures, DPAPI encryption specifications, and privacy commitments.
-* [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) — Comprehensive developer setup and packaging guide.
-* [VALIDATION_REPORT.md](VALIDATION_REPORT.md) — Complete test coverage results, performance benchmarks, and validation logs.
-
----
-
-## 🔬 Research & Development Team
-
-* **Lead Creator**: [Dr. Nishant Munjal](https://nishantmunjal.com)
-* **Research Laboratory**: [NMRIL Labs](https://nishantmunjal.com/nmril)
-
----
-
-## ⚖️ License
-
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for complete terms.
+*© 2026 AI Rewrite Anywhere. Designed and engineered exclusively for Microsoft Windows 10 & 11.*

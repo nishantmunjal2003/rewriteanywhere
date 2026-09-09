@@ -21,6 +21,7 @@ public class RewriteOrchestrator : IRewriteOrchestrator
     private readonly ITextReplacementService _textReplacementService;
     private readonly IClipboardManager _clipboardManager;
     private readonly IAppLogger _logger;
+    private readonly ILicenseService? _licenseService;
 
     public event Action<SelectionInfo>? ShowRewriteMenuRequested;
     public event Action<string, bool>? NotificationRequested;
@@ -34,7 +35,8 @@ public class RewriteOrchestrator : IRewriteOrchestrator
         ISelectionService selectionService,
         ITextReplacementService textReplacementService,
         IClipboardManager clipboardManager,
-        IAppLogger logger)
+        IAppLogger logger,
+        ILicenseService? licenseService = null)
     {
         _settingsService = settingsService;
         _secureStorage = secureStorage;
@@ -43,6 +45,7 @@ public class RewriteOrchestrator : IRewriteOrchestrator
         _textReplacementService = textReplacementService;
         _clipboardManager = clipboardManager;
         _logger = logger;
+        _licenseService = licenseService;
     }
 
     public async Task TriggerRewriteFlowFromHotkeyAsync()
@@ -88,6 +91,15 @@ public class RewriteOrchestrator : IRewriteOrchestrator
             ProviderType.Claude => settings.ClaudeModel,
             _ => settings.MockModel
         };
+
+        // Check license protection
+        if (_licenseService != null && !_licenseService.IsLicensed)
+        {
+            var licenseMsg = "Product license required. Please activate your product key in Settings (License & Protection).";
+            _logger.LogWarning(licenseMsg);
+            NotificationRequested?.Invoke(licenseMsg, true);
+            return RewriteResponse.CreateFailure(licenseMsg, providerType, model);
+        }
 
         var apiKey = _secureStorage.GetSecret(providerType.ToString()) ?? string.Empty;
 

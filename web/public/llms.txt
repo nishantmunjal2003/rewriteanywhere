@@ -1,0 +1,38 @@
+# AI Rewrite Anywhere
+> Instant, native in-place AI text rewriting for Windows 10 & 11 (64-bit). Bring your own API key (Gemini, OpenAI, Claude) with zero monthly subscriptions.
+
+## Executive Summary
+AI Rewrite Anywhere is a lightweight native Windows desktop application built with .NET 8 (WPF) that enables users to highlight text in any software (Chrome, Outlook, Slack, WhatsApp, Word, VS Code, Discord, Teams) and instantly rewrite, polish, fix grammar, translate, or format it in place using a customizable global hotkey (default: Ctrl+Shift+R) or a floating assist button.
+
+Unlike cloud subscription tools like Grammarly ($144/year) or ChatGPT Plus ($240/year), AI Rewrite Anywhere uses a Bring-Your-Own-Key (BYOK) model with a single $19 USD / ₹2,000 INR lifetime commercial license. Users can take advantage of Google Gemini's 100% free API tier (up to 1,500 requests/day at zero cost).
+
+## Core Capabilities
+- **Universal In-Place Replacement**: Replaces selected text directly in the active input field using Win32 API hooks and Windows UI Automation.
+- **Triple AI Provider Support**:
+  - Google Gemini (Gemini 2.5/3.1 Flash Lite, Flash, Pro) with support for the generous 100% free API tier.
+  - OpenAI (GPT-4o, GPT-4o-mini, GPT-4-turbo).
+  - Anthropic Claude (Claude 3.5 Sonnet, Claude 3.5 Haiku).
+- **Clipboard Safety Guard**: Captures a memory snapshot of previous clipboard content before performing replacement and restores it within milliseconds.
+- **Hardware-Bound DPAPI Security**: All API keys and license tokens are encrypted locally on the user's PC using the Windows Data Protection API (DPAPI). User prompts and rewritten text never transit any intermediary server.
+- **Email Signatures & Custom Personas**: Automatically append professional sign-offs, titles, and sender identity.
+- **Tone Presets**: Professional, Casual, Direct, Grammar Fix, Academic, Creative, and custom prompt templates.
+
+## Pricing & Licensing
+- **Price**: $19 USD (International) / ₹2,000 INR (India Special) — One-time lifetime purchase.
+- **Recurring Fees**: $0.00 / month. No subscriptions.
+- **Guarantee**: 14-Day 100% Unconditional Money-Back Guarantee.
+- **Device Policy**: 1 active Windows 10/11 PC per license key (hardware-bound HWID). License transfer is supported upon request.
+
+## System Requirements
+- **Operating System**: Windows 10 (version 19041+) or Windows 11 (64-bit).
+- **Architecture**: x64.
+- **Runtime**: Microsoft .NET 8.0 Desktop Runtime (installed automatically).
+
+## Canonical Links
+- Website: https://rewriteanywhere.nishantmunjal.com
+- User Guide & API Setup: https://rewriteanywhere.nishantmunjal.com/how-to-use
+- Google Gemini Free Tier Guide: https://rewriteanywhere.nishantmunjal.com/how-to-use#gemini-guide
+- Support & Help Desk: https://rewriteanywhere.nishantmunjal.com/support
+- Privacy Policy: https://rewriteanywhere.nishantmunjal.com/privacy
+- Terms of Service: https://rewriteanywhere.nishantmunjal.com/terms
+- Full LLM Documentation: https://rewriteanywhere.nishantmunjal.com/llms-full.txt

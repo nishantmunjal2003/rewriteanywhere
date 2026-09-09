@@ -39,6 +39,7 @@ public partial class App : Application
     private SelectionWatcher? _selectionWatcher;
     private FloatingButtonWindow? _floatingButtonWindow;
     private TrayIconManager? _trayIconManager;
+    private ILicenseService? _licenseService;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -119,7 +120,10 @@ public partial class App : Application
             _replacementService = new TextReplacementService(_clipboardManager, _logger);
             _startupManager = new StartupManager(_logger);
 
-            // Initialize Orchestrator
+            // Initialize License Service
+            _licenseService = new LicenseService(_settingsService, _secureStorage, _logger);
+
+            // Initialize Orchestrator with License Guard
             _orchestrator = new RewriteOrchestrator(
                 _settingsService,
                 _secureStorage,
@@ -127,7 +131,21 @@ public partial class App : Application
                 _selectionService,
                 _replacementService,
                 _clipboardManager,
-                _logger);
+                _logger,
+                _licenseService);
+
+            // Background Online License Verification on startup
+            if (_settingsService.Settings.IsLicenseActive)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _licenseService.VerifyLicenseOnlineAsync();
+                    }
+                    catch { }
+                });
+            }
 
             // Setup Floating Button Window
             _floatingButtonWindow = new FloatingButtonWindow();
@@ -249,7 +267,8 @@ public partial class App : Application
 
             if (!startMinimized)
             {
-                OpenSettingsWindow();
+                int initialTab = (_licenseService != null && _licenseService.IsLicensed) ? 0 : 4;
+                OpenSettingsWindow(initialTab);
             }
         }
         catch (Exception ex)
@@ -313,6 +332,8 @@ public partial class App : Application
         }, ct);
     }
 
+    private SettingsWindow? _settingsWindow;
+
     private void BringWindowToForeground(Window window)
     {
         if (window == null) return;
@@ -323,8 +344,6 @@ public partial class App : Application
             {
                 window.WindowState = WindowState.Normal;
             }
-
-            DisplayHelper.CenterOnActiveMonitor(window);
 
             window.Show();
 
@@ -373,41 +392,48 @@ public partial class App : Application
         {
             _logger?.LogInfo($"OpenSettingsWindow invoked. tabIndex={tabIndex}, settingsServiceNull={_settingsService == null}, startupManagerNull={_startupManager == null}");
 
-            // Prevent opening multiple settings windows
-            foreach (Window w in Current.Windows)
+            if (_settingsWindow != null && _settingsWindow.IsLoaded)
             {
-                if (w is SettingsWindow sw)
+                _logger?.LogInfo("Existing SettingsWindow is active. Bringing to foreground.");
+                if (tabIndex == 5)
                 {
-                    _logger?.LogInfo("Existing SettingsWindow found in Current.Windows. Activating existing instance.");
-                    if (tabIndex == 5)
-                    {
-                        sw.TabAbout.IsChecked = true;
-                    }
-                    BringWindowToForeground(sw);
-                    return;
+                    _settingsWindow.TabAbout.IsChecked = true;
                 }
+                else if (tabIndex == 4)
+                {
+                    _settingsWindow.TabLicense.IsChecked = true;
+                }
+                BringWindowToForeground(_settingsWindow);
+                return;
             }
 
             if (_settingsService != null && _secureStorage != null && _providerFactory != null && _startupManager != null)
             {
                 _logger?.LogInfo("Creating and showing new SettingsWindow...");
-                var settingsWin = new SettingsWindow(_settingsService, _secureStorage, _providerFactory, _startupManager);
+                _settingsWindow = new SettingsWindow(_settingsService, _secureStorage, _providerFactory, _startupManager, _licenseService);
+                Application.Current.MainWindow = _settingsWindow;
+
                 if (tabIndex == 5)
                 {
-                    settingsWin.TabAbout.IsChecked = true;
+                    _settingsWindow.TabAbout.IsChecked = true;
+                }
+                else if (tabIndex == 4)
+                {
+                    _settingsWindow.TabLicense.IsChecked = true;
                 }
 
-                settingsWin.Closed += (s, e) =>
+                _settingsWindow.Closed += (s, e) =>
                 {
                     _logger?.LogInfo("SettingsWindow closed by user.");
+                    _settingsWindow = null;
                     _trayIconManager?.ShowNotification(
                         Constants.AppName,
                         "AI Rewrite Anywhere is running in your system tray. Press Ctrl+Shift+R anytime!",
                         ToolTipIcon.Info);
                 };
 
-                BringWindowToForeground(settingsWin);
-                _logger?.LogInfo($"SettingsWindow displayed successfully. IsVisible={settingsWin.IsVisible}");
+                BringWindowToForeground(_settingsWindow);
+                _logger?.LogInfo($"SettingsWindow displayed successfully. IsVisible={_settingsWindow.IsVisible}");
             }
             else
             {

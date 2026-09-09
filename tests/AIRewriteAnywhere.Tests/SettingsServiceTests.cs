@@ -30,7 +30,7 @@ public class SettingsServiceTests : IDisposable
 
         Assert.NotNull(service.Settings);
         Assert.True(service.Settings.ShowFloatingButton);
-        Assert.Equal(ProviderType.OpenAI, service.Settings.ActiveProvider);
+        Assert.Equal(ProviderType.Gemini, service.Settings.ActiveProvider);
         Assert.Equal(ModifierKeys.Control | ModifierKeys.Shift, service.Settings.HotkeyModifiers);
         Assert.Equal(Key.R, service.Settings.HotkeyKey);
         Assert.False(service.Settings.PreviewBeforeReplace);
@@ -44,7 +44,7 @@ public class SettingsServiceTests : IDisposable
         var service = new SettingsService(_tempSettingsPath);
         await service.LoadAsync();
 
-        service.Settings.ActiveProvider = ProviderType.Gemini;
+        service.Settings.ActiveProvider = ProviderType.Claude;
         service.Settings.PreviewBeforeReplace = true;
         service.Settings.FloatingButtonSize = FloatingButtonSize.Large;
         service.Settings.EnablePowerEfficiency = false;
@@ -56,12 +56,34 @@ public class SettingsServiceTests : IDisposable
         var reloadedService = new SettingsService(_tempSettingsPath);
         await reloadedService.LoadAsync();
 
-        Assert.Equal(ProviderType.Gemini, reloadedService.Settings.ActiveProvider);
+        Assert.Equal(ProviderType.Claude, reloadedService.Settings.ActiveProvider);
         Assert.True(reloadedService.Settings.PreviewBeforeReplace);
         Assert.Equal(FloatingButtonSize.Large, reloadedService.Settings.FloatingButtonSize);
         Assert.False(reloadedService.Settings.EnablePowerEfficiency);
         Assert.True(reloadedService.Settings.WritingStyle.Enabled);
         Assert.Equal("Direct", reloadedService.Settings.WritingStyle.Tone);
+    }
+
+    [Fact]
+    public async Task SaveAndLoad_PersistsLicenseSettings()
+    {
+        var service = new SettingsService(_tempSettingsPath);
+        await service.LoadAsync();
+
+        service.Settings.LicenseKey = "ARW-TEST-1234-ABCD-EFGH";
+        service.Settings.IsLicenseActive = true;
+        service.Settings.LicenseMachineId = "HWID-TESTMACHINE-9999";
+        service.Settings.LicenseActivatedAt = DateTime.UtcNow.ToString("O");
+
+        await service.SaveAsync();
+
+        var reloadedService = new SettingsService(_tempSettingsPath);
+        await reloadedService.LoadAsync();
+
+        Assert.Equal("ARW-TEST-1234-ABCD-EFGH", reloadedService.Settings.LicenseKey);
+        Assert.True(reloadedService.Settings.IsLicenseActive);
+        Assert.Equal("HWID-TESTMACHINE-9999", reloadedService.Settings.LicenseMachineId);
+        Assert.False(string.IsNullOrEmpty(reloadedService.Settings.LicenseActivatedAt));
     }
 
     [Fact]
