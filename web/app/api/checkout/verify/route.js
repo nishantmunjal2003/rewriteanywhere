@@ -1,35 +1,9 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { fetchCashfreeOrder } from '@/lib/cashfree';
 import { generateLicenseKey, readLicenses, saveLicenses } from '@/lib/license-manager';
+import { readOrders, saveOrders } from '@/lib/order-manager';
 import { recordCouponUsage } from '@/lib/coupon-manager';
 import { sendLicenseEmail } from '@/lib/zeptomail';
-
-function getOrdersPath() {
-  return path.join(process.cwd(), 'data', 'orders.json');
-}
-
-function readOrders() {
-  try {
-    const p = getOrdersPath();
-    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
-  } catch (e) {
-    console.error('Error reading orders:', e);
-  }
-  return {};
-}
-
-function saveOrders(orders) {
-  try {
-    const p = getOrdersPath();
-    const dir = path.dirname(p);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(p, JSON.stringify(orders, null, 2), 'utf8');
-  } catch (e) {
-    console.error('Error saving orders:', e);
-  }
-}
 
 export async function POST(request) {
   try {
@@ -95,6 +69,9 @@ export async function POST(request) {
     const licenseKey = generateLicenseKey();
     const licenses = readLicenses();
 
+    const tier = order.currency === 'USD' ? 'USD_19' : 'INR_1600';
+    const price = order.currency === 'USD' ? '$19 USD' : '₹1,600 INR';
+
     const newLicense = {
       id: `lic_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       licenseKey,
@@ -102,15 +79,17 @@ export async function POST(request) {
       email: order.customerEmail,
       customerName: order.customerName,
       orderId: order.orderId,
-      tier: order.currency === 'USD' ? 'COMMERCIAL_USD' : 'COMMERCIAL_INR',
-      price: order.finalAmount,
+      tier,
+      price,
       currency: order.currency,
       discountApplied: order.discountAmount || 0,
       couponCode: order.couponCode || null,
-      status: 'issued',
+      status: 'unactivated',
       activeMachineId: null,
       createdAt: new Date().toISOString(),
-      paymentGateway: order.isMock ? 'CASHFREE_SIMULATED' : 'CASHFREE'
+      activatedAt: null,
+      paymentGateway: order.isMock ? 'CASHFREE_SIMULATED' : 'CASHFREE',
+      releaseHistory: []
     };
 
     licenses.unshift(newLicense);

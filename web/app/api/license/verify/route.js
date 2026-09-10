@@ -1,26 +1,8 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import { readLicenses } from '@/lib/license-manager';
 
 const HMAC_SECRET = process.env.LICENSE_HMAC_SECRET || 'arw-hmac-secret-token-key-2026';
-
-function getDbPath() {
-  return path.join(process.cwd(), 'data', 'licenses.json');
-}
-
-function readLicenses() {
-  try {
-    const dbPath = getDbPath();
-    if (fs.existsSync(dbPath)) {
-      const data = fs.readFileSync(dbPath, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (err) {
-    console.error('Error reading licenses.json:', err);
-  }
-  return [];
-}
 
 export async function POST(request) {
   try {

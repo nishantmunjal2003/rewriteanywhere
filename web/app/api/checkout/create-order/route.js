@@ -1,35 +1,7 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { createCashfreeOrder } from '@/lib/cashfree';
 import { validateCoupon } from '@/lib/coupon-manager';
-
-function getOrdersPath() {
-  return path.join(process.cwd(), 'data', 'orders.json');
-}
-
-function readOrders() {
-  try {
-    const p = getOrdersPath();
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, 'utf8'));
-    }
-  } catch (e) {
-    console.error('Error reading orders.json:', e);
-  }
-  return {};
-}
-
-function saveOrders(orders) {
-  try {
-    const p = getOrdersPath();
-    const dir = path.dirname(p);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(p, JSON.stringify(orders, null, 2), 'utf8');
-  } catch (e) {
-    console.error('Error saving orders.json:', e);
-  }
-}
+import { readOrders, saveOrders } from '@/lib/order-manager';
 
 export async function POST(request) {
   try {
