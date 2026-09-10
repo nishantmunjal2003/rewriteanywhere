@@ -9,7 +9,7 @@ const ZEPTOMAIL_API_TOKEN =
 const ZEPTOMAIL_FROM_EMAIL =
   process.env.ZEPTOMAIL_FROM_ADDRESS ||
   process.env.ZEPTOMAIL_FROM_EMAIL ||
-  'noreply@biopge.com';
+  'noreply@nmril.com';
 
 const ZEPTOMAIL_FROM_NAME =
   process.env.ZEPTOMAIL_FROM_NAME ||
@@ -74,27 +74,8 @@ export async function sendEmail({ toEmail, toName = '', subject, htmlBody, textB
     let data = await res.json();
     if (!res.ok) {
       console.error('ZeptoMail API error:', JSON.stringify(data));
-      // If the configured sender address is not verified in ZeptoMail yet (SM_111), fallback to the verified domain gkv.ac.in
-      const isUnverifiedSender = data.error?.details?.some((d) => d.code === 'SM_111' || d.message?.includes('not verified'));
-      if (isUnverifiedSender && payload.from.address !== 'noreply@gkv.ac.in') {
-        console.warn(`[ZeptoMail] Sender ${payload.from.address} not verified in Mail Agent. Retrying with verified sender noreply@gkv.ac.in...`);
-        payload.from.address = 'noreply@gkv.ac.in';
-        const retryRes = await fetch(ZEPTOMAIL_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': authHeader
-          },
-          body: JSON.stringify(payload)
-        });
-        const retryData = await retryRes.json();
-        if (retryRes.ok) {
-          return { success: true, isMock: false, data: retryData, fallbackUsed: true };
-        }
-        console.error('ZeptoMail retry failed:', JSON.stringify(retryData));
-      }
-      return { success: false, error: data.error?.details?.[0]?.message || data.message || 'Failed to dispatch email via ZeptoMail' };
+      const errorMsg = data.error?.details?.[0]?.message || data.message || 'Failed to dispatch email via ZeptoMail';
+      return { success: false, error: errorMsg, details: data.error?.details };
     }
 
     return { success: true, isMock: false, data };
@@ -132,7 +113,10 @@ export async function sendLicenseEmail({ toEmail, customerName, licenseKey, orde
 <body>
   <div class="container">
     <div class="header">
-      <div class="brand">⚡ AI Rewrite Anywhere</div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="https://rewriteanywhere.nishantmunjal.com/app_icon.png" width="56" height="56" alt="AI Rewrite Anywhere" style="border-radius: 14px; display: inline-block; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); vertical-align: middle;" />
+      </div>
+      <div class="brand">AI Rewrite Anywhere</div>
       <h2 style="color: #ffffff; margin-top: 10px;">Thank you for your purchase, ${name}!</h2>
       <p style="color: #94a3b8; font-size: 15px;">Your lifetime commercial license key is ready for immediate activation.</p>
     </div>
@@ -156,7 +140,7 @@ export async function sendLicenseEmail({ toEmail, customerName, licenseKey, orde
       <h3 style="color: #ffffff; margin-top: 0; font-size: 16px;">Quick Activation Guide (30 Seconds):</h3>
       <ol>
         <li>Download and run <strong>AI-Rewrite-Anywhere-Setup.exe</strong> on Windows 10 or 11.</li>
-        <li>Look for the glowing ⚡ icon in your Windows System Tray (near the clock).</li>
+        <li>Look for the <strong>AI Rewrite Anywhere</strong> cosmic quill icon in your Windows System Tray (near the clock).</li>
         <li>Right-click the tray icon and select <strong>Settings → License</strong>.</li>
         <li>Paste your license key: <code style="color: #facc15;">${licenseKey}</code> and click <strong>Activate License</strong>.</li>
         <li>Press <strong>Ctrl+Shift+R</strong> in any Windows application to rewrite in place!</li>
@@ -207,7 +191,10 @@ export async function sendOtpEmail({ toEmail, otpCode }) {
 </head>
 <body>
   <div class="container">
-    <div class="brand">⚡ AI Rewrite Anywhere</div>
+    <div style="text-align: center; margin-bottom: 14px;">
+      <img src="https://rewriteanywhere.nishantmunjal.com/app_icon.png" width="52" height="52" alt="AI Rewrite Anywhere" style="border-radius: 14px; display: inline-block; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); vertical-align: middle;" />
+    </div>
+    <div class="brand">AI Rewrite Anywhere</div>
     <h2 style="color: #ffffff; margin-top: 0;">Your Verification Code</h2>
     <p style="color: #94a3b8; font-size: 15px;">Use this 6-digit one-time code to log into your customer dashboard and access your purchased license keys and software downloads:</p>
 
