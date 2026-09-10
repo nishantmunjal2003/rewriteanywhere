@@ -1,9 +1,24 @@
 // ZeptoMail Transactional Email Client (Zoho ZeptoMail API v1.1)
 
-const ZEPTOMAIL_API_TOKEN = process.env.ZEPTOMAIL_API_TOKEN || process.env.ZEPTOMAIL_TOKEN || '';
-const ZEPTOMAIL_FROM_EMAIL = process.env.ZEPTOMAIL_FROM_EMAIL || 'support@rewriteanywhere.nishantmunjal.com';
-const ZEPTOMAIL_FROM_NAME = process.env.ZEPTOMAIL_FROM_NAME || 'AI Rewrite Anywhere';
-const ZEPTOMAIL_ENDPOINT = process.env.ZEPTOMAIL_ENDPOINT || 'https://api.zeptomail.in/v1.1/email';
+const ZEPTOMAIL_API_TOKEN =
+  process.env.ZEPTOMAIL_API_KEY ||
+  process.env.ZEPTOMAIL_API_TOKEN ||
+  process.env.ZEPTOMAIL_TOKEN ||
+  '';
+
+const ZEPTOMAIL_FROM_EMAIL =
+  process.env.ZEPTOMAIL_FROM_ADDRESS ||
+  process.env.ZEPTOMAIL_FROM_EMAIL ||
+  'noreply@biopge.com';
+
+const ZEPTOMAIL_FROM_NAME =
+  process.env.ZEPTOMAIL_FROM_NAME ||
+  'Rewrite Anywhere';
+
+const ZEPTOMAIL_ENDPOINT =
+  process.env.ZEPTOMAIL_URL ||
+  process.env.ZEPTOMAIL_ENDPOINT ||
+  'https://api.zeptomail.com/v1.1/email';
 
 export function getZeptoMailConfig() {
   return {

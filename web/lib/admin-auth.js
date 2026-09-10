@@ -1,5 +1,19 @@
 import crypto from 'crypto';
 
+export function getAuthorizedAdminEmails() {
+  const envEmails = process.env.ADMIN_EMAIL || process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@biopge.com,nishantmunjal2003@gmail.com';
+  return envEmails
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isAuthorizedAdminEmail(email) {
+  if (!email) return false;
+  const authorized = getAuthorizedAdminEmails();
+  return authorized.includes(email.trim().toLowerCase());
+}
+
 export const AUTHORIZED_ADMIN_EMAIL = 'nishantmunjal2003@gmail.com';
 export const EXPECTED_GOOGLE_CLIENT_ID =
   process.env.GOOGLE_CLIENT_ID ||
@@ -57,7 +71,7 @@ export function verifySessionToken(token) {
       return null;
     }
 
-    if (payload.email !== AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
+    if (!isAuthorizedAdminEmail(payload.email)) {
       return null;
     }
 
@@ -94,7 +108,7 @@ export async function verifyGoogleIdToken(idToken) {
     }
 
     const email = (data.email || '').toLowerCase().trim();
-    if (email !== AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
+    if (!isAuthorizedAdminEmail(email)) {
       return {
         valid: false,
         error: 'Access Denied.'
