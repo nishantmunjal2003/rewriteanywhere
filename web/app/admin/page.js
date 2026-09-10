@@ -1,6 +1,5 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BrandIcon from '../../components/BrandIcon';
 
 const DEFAULT_GOOGLE_CLIENT_ID = '698709002321-lhmhulia304qiqqj55lhehk5tn70k753.apps.googleusercontent.com';
@@ -10,6 +9,8 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
   const [isInitializing, setIsInitializing] = useState(true);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
 
   // Google OAuth Client ID setup
   const [activeGoogleClientId, setActiveGoogleClientId] = useState('');
@@ -88,6 +89,17 @@ export default function AdminPage() {
     }
 
     checkSession();
+  }, []);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const checkSession = async () => {
@@ -588,28 +600,211 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            {adminUser && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', padding: '6px 14px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-subtle)' }}>
-                {adminUser.picture ? (
-                  <img src={adminUser.picture} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Profile Icon with Dropdown */}
+            <div ref={profileDropdownRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setProfileDropdownOpen((prev) => !prev)}
+                aria-label="Account menu"
+                aria-expanded={profileDropdownOpen}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: profileDropdownOpen ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-full)',
+                  padding: '4px 10px 4px 4px',
+                  cursor: 'pointer',
+                  color: 'var(--text-primary)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {adminUser?.picture ? (
+                  <img
+                    src={adminUser.picture}
+                    alt="Profile"
+                    style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
                 ) : (
-                  <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>
-                    {adminUser.name?.[0] || 'N'}
-                  </span>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-indigo))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.88rem',
+                      fontWeight: 700,
+                      color: '#ffffff'
+                    }}
+                  >
+                    {adminUser?.name?.[0]?.toUpperCase() || 'A'}
+                  </div>
                 )}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{adminUser.name || 'Admin'}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{adminUser.email}</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  style={{
+                    color: 'var(--text-muted)',
+                    transform: profileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease'
+                  }}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {profileDropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    width: '260px',
+                    background: 'var(--card-bg, #111827)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: '0 18px 40px rgba(0, 0, 0, 0.45)',
+                    padding: '8px',
+                    zIndex: 100,
+                    backdropFilter: 'blur(16px)',
+                    animation: 'fadeIn 0.15s ease-out'
+                  }}
+                >
+                  {/* User Info Header */}
+                  <div
+                    style={{
+                      padding: '12px',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      marginBottom: '4px'
+                    }}
+                  >
+                    {adminUser?.picture ? (
+                      <img
+                        src={adminUser.picture}
+                        alt="Profile"
+                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-indigo))',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1rem',
+                          fontWeight: 700,
+                          color: '#ffffff'
+                        }}
+                      >
+                        {adminUser?.name?.[0]?.toUpperCase() || 'A'}
+                      </div>
+                    )}
+                    <div style={{ overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: '0.92rem',
+                          color: 'var(--text-primary)',
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {adminUser?.name || 'Administrator'}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '0.78rem',
+                          color: 'var(--text-muted)',
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                          marginTop: '2px'
+                        }}
+                      >
+                        {adminUser?.email || ''}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <button
+                    onClick={() => {
+                      fetchLicenses();
+                      showToast('Refreshing license data...');
+                      setProfileDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.88rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span>🔄</span>
+                    <span>Refresh Data</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#f87171',
+                      fontSize: '0.88rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginTop: '2px',
+                      transition: 'background 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span>🚪</span>
+                    <span>Sign Out</span>
+                  </button>
                 </div>
-              </div>
-            )}
-            <button onClick={fetchLicenses} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.88rem' }}>
-              🔄 Refresh
-            </button>
-            <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.88rem', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}>
-              Sign Out
-            </button>
+              )}
+            </div>
           </div>
         </div>
 
