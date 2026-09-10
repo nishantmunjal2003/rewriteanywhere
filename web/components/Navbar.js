@@ -54,6 +54,7 @@ export default function Navbar() {
             <li><a href="/#features" className="nav-link">Features</a></li>
             <li><a href="/#simulator" className="nav-link">Live Demo</a></li>
             <li><a href="/#pricing" className="nav-link">Pricing</a></li>
+            <li><a href="/dashboard" className="nav-link">My Licenses</a></li>
             <li><a href="/how-to-use" className="nav-link">How to Use</a></li>
             <li><a href="/support" className="nav-link">Support</a></li>
           </ul>
@@ -113,6 +114,12 @@ export default function Navbar() {
                 <a href="/#pricing" className="mobile-nav-link" onClick={closeMenu}>
                   <span className="mobile-nav-icon">💎</span>
                   <span>Pricing & Guarantee</span>
+                </a>
+              </li>
+              <li>
+                <a href="/dashboard" className="mobile-nav-link" onClick={closeMenu}>
+                  <span className="mobile-nav-icon">🔑</span>
+                  <span>My Licenses / Dashboard</span>
                 </a>
               </li>
               <li>

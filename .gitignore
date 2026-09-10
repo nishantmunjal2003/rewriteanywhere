@@ -38,4 +38,6 @@ web/data/*.json
 node_modules/
 .next/
 out/
+*.tar.gz
+deploy.tar.gz
 

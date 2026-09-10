@@ -23,6 +23,16 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
+  // Tab & Coupon States
+  const [activeTab, setActiveTab] = useState('licenses'); // 'licenses' | 'coupons' | 'settings'
+  const [coupons, setCoupons] = useState([]);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponType, setCouponType] = useState('percentage');
+  const [couponValue, setCouponValue] = useState('20');
+  const [couponMaxUses, setCouponMaxUses] = useState('');
+  const [couponExpires, setCouponExpires] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+
   // Issue Key Form State
   const [issueTier, setIssueTier] = useState('USD_19');
   const [issueEmail, setIssueEmail] = useState('');
@@ -244,6 +254,69 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await authFetch('/api/admin/coupons');
+      if (res.ok) {
+        const data = await res.json();
+        setCoupons(data.coupons || []);
+      }
+    } catch (err) {
+      console.error('Error fetching coupons:', err);
+    }
+  };
+
+  const handleCreateCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode.trim() || !couponValue) return;
+    setCouponLoading(true);
+    try {
+      const res = await authFetch('/api/admin/coupons', {
+        method: 'POST',
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          discountType: couponType,
+          discountValue: parseFloat(couponValue),
+          maxUses: couponMaxUses ? parseInt(couponMaxUses, 10) : null,
+          expiresAt: couponExpires ? new Date(couponExpires).toISOString() : null
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || 'Coupon saved successfully!');
+        setCouponCode('');
+        setCouponValue('20');
+        setCouponMaxUses('');
+        setCouponExpires('');
+        fetchCoupons();
+      } else {
+        showToast(data.message || 'Failed to save coupon.', 'error');
+      }
+    } catch (err) {
+      showToast('Error saving coupon.', 'error');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleDeleteCoupon = async (code) => {
+    if (!confirm(`Are you sure you want to delete coupon ${code}?`)) return;
+    try {
+      const res = await authFetch(`/api/admin/coupons?code=${encodeURIComponent(code)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Coupon ${code} deleted.`);
+        fetchCoupons();
+      } else {
+        showToast(data.message || 'Failed to delete coupon.', 'error');
+      }
+    } catch (err) {
+      showToast('Error deleting coupon.', 'error');
     }
   };
 
@@ -566,8 +639,65 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Metrics Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '36px' }}>
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '32px', paddingBottom: '4px' }}>
+          <button
+            onClick={() => setActiveTab('licenses')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+              border: 'none',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              background: activeTab === 'licenses' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'licenses' ? '#ffffff' : 'var(--text-muted)',
+              borderBottom: activeTab === 'licenses' ? '2px solid var(--accent-primary)' : '2px solid transparent'
+            }}
+          >
+            🔑 Licenses & Devices ({totalCount})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('coupons');
+              fetchCoupons();
+            }}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+              border: 'none',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              background: activeTab === 'coupons' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'coupons' ? '#ffffff' : 'var(--text-muted)',
+              borderBottom: activeTab === 'coupons' ? '2px solid var(--accent-primary)' : '2px solid transparent'
+            }}
+          >
+            🎟️ Discount Coupons ({coupons.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+              border: 'none',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              cursor: 'pointer',
+              background: activeTab === 'settings' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+              color: activeTab === 'settings' ? '#ffffff' : 'var(--text-muted)',
+              borderBottom: activeTab === 'settings' ? '2px solid var(--accent-primary)' : '2px solid transparent'
+            }}
+          >
+            ⚙️ Gateway & API Settings
+          </button>
+        </div>
+
+        {activeTab === 'licenses' && (
+          <>
+            {/* Metrics Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '36px' }}>
           <div className="card" style={{ padding: '24px' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
               Total Issued Keys
@@ -1015,6 +1145,287 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
+        </>
+      )}
+
+      {/* Coupons Management Tab */}
+      {activeTab === 'coupons' && (
+        <div>
+          {/* Create Coupon Card & Summary */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', marginBottom: '36px' }}>
+            <div className="card" style={{ padding: '28px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🎟️</span>
+                <h2 className="heading-md" style={{ margin: 0 }}>Create Discount Coupon</h2>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                Generate promo codes for campaigns, influencers, or special offers.
+              </p>
+
+              <form onSubmit={handleCreateCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                      Coupon Code
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. LAUNCH50"
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'rgba(10, 13, 20, 0.8)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'var(--font-mono)',
+                        textTransform: 'uppercase',
+                        fontWeight: 700,
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                      Discount Type
+                    </label>
+                    <select
+                      value={couponType}
+                      onChange={(e) => setCouponType(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'rgba(10, 13, 20, 0.8)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount (₹ or $)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                      Discount Value {couponType === 'percentage' ? '(%)' : '(Amount)'}
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      max={couponType === 'percentage' ? 100 : 2000}
+                      value={couponValue}
+                      onChange={(e) => setCouponValue(e.target.value)}
+                      placeholder="20"
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'rgba(10, 13, 20, 0.8)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                      Max Usage Limit (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={couponMaxUses}
+                      onChange={(e) => setCouponMaxUses(e.target.value)}
+                      placeholder="Unlimited"
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        background: 'rgba(10, 13, 20, 0.8)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--text-primary)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Expiration Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={couponExpires}
+                    onChange={(e) => setCouponExpires(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      background: 'rgba(10, 13, 20, 0.8)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={couponLoading}
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '6px' }}
+                >
+                  {couponLoading ? 'Saving Coupon...' : '🎟️ Save & Activate Coupon'}
+                </button>
+              </form>
+            </div>
+
+            {/* Coupon Info / Guide */}
+            <div className="card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <h3 className="heading-md" style={{ marginBottom: '12px' }}>How Coupons Work</h3>
+                <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.8' }}>
+                  <li>Customers enter coupon codes directly in the Checkout modal.</li>
+                  <li>Discount is calculated and deducted in real-time before Cashfree payment initiation.</li>
+                  <li>Usage count increments automatically upon successful payment.</li>
+                  <li>Expired or maxed-out coupons are automatically rejected.</li>
+                </ul>
+              </div>
+
+              <div style={{ padding: '16px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontWeight: 600, color: '#a5b4fc', fontSize: '0.85rem' }}>Active Coupons:</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
+                  {coupons.length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Coupons Table */}
+          <div className="card" style={{ padding: '28px' }}>
+            <h2 className="heading-md" style={{ marginBottom: '16px' }}>All Promotional Coupons</h2>
+            <div className="table-wrapper" style={{ margin: 0 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Coupon Code</th>
+                    <th>Discount</th>
+                    <th>Usage</th>
+                    <th>Expires</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {coupons.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                        No coupons created yet. Use the form above to create your first discount code.
+                      </td>
+                    </tr>
+                  ) : (
+                    coupons.map((c) => (
+                      <tr key={c.code}>
+                        <td>
+                          <code style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#facc15', fontSize: '1rem' }}>
+                            {c.code}
+                          </code>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 600 }}>
+                            {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `Fixed ${c.discountValue} OFF`}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {c.usedCount || 0} {c.maxUses ? `/ ${c.maxUses}` : 'uses'}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                            {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              background: c.active !== false ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                              color: c.active !== false ? '#34d399' : '#f87171'
+                            }}
+                          >
+                            {c.active !== false ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            onClick={() => handleDeleteCoupon(c.code)}
+                            className="btn btn-secondary"
+                            style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#fca5a5' }}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Tab */}
+      {activeTab === 'settings' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div className="card" style={{ padding: '28px' }}>
+            <h2 className="heading-md" style={{ marginBottom: '16px' }}>Payment & Email Gateway Integration Status</h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Cashfree Payment Gateway</span>
+                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', fontWeight: 600 }}>
+                    API v2023-08-01
+                  </span>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                  Configured via <code>CASHFREE_APP_ID</code> and <code>CASHFREE_SECRET_KEY</code> in environment variables. Supports UPI, Cards, NetBanking, and Wallets.
+                </p>
+              </div>
+
+              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>ZeptoMail Transactional Email</span>
+                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontWeight: 600 }}>
+                    Zoho REST API v1.1
+                  </span>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                  Configured via <code>ZEPTOMAIL_API_TOKEN</code> in environment variables. Automatically dispatches license key receipts and 6-digit dashboard login OTPs.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

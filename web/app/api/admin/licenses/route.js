@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { generateLicenseKey, readLicenses, saveLicenses } from '../../../../lib/license-manager';
 import { getAdminSessionFromRequest } from '../../../../lib/admin-auth';
 
+export const dynamic = 'force-dynamic';
+
 function isAuthorized(request) {
   const session = getAdminSessionFromRequest(request);
   return Boolean(session);

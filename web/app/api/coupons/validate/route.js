@@ -1,0 +1,37 @@
+import { NextResponse } from 'next/server';
+import { validateCoupon } from '@/lib/coupon-manager';
+
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    const { code, amount, currency = 'INR' } = body || {};
+
+    if (!code) {
+      return NextResponse.json(
+        { success: false, message: 'Coupon code is required.' },
+        { status: 400 }
+      );
+    }
+
+    const originalAmount = parseFloat(amount) || (currency.toUpperCase() === 'USD' ? 19 : 2000);
+    const result = validateCoupon(code, originalAmount, currency);
+
+    if (!result.valid) {
+      return NextResponse.json(
+        { success: false, message: result.message },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Validate coupon error:', error);
+    return NextResponse.json(
+      { success: false, message: 'Failed to validate coupon.' },
+      { status: 500 }
+    );
+  }
+}

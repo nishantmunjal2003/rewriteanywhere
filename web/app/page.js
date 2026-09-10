@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import CheckoutModal from '@/components/CheckoutModal';
 
 export default function HomePage() {
   const [currency, setCurrency] = useState('usd'); // 'usd' or 'inr'
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedTone, setSelectedTone] = useState('Professional');
   const [sampleText, setSampleText] = useState(
     'sir tomorrow i will not able to attend office meeting because some urgent personal matter came up at home. please consider leave for me.'
@@ -432,11 +434,7 @@ export default function HomePage() {
             <button
               className="btn btn-primary btn-large"
               style={{ width: '100%', marginBottom: '16px' }}
-              onClick={() => {
-                alert(
-                  `Thank you for choosing AI Rewrite Anywhere!\n\nPrice: ${currency === 'inr' ? '₹2,000 INR' : '$19 USD'}\nEnvironment: Windows 10/11 (64-bit)\nGuarantee: 14-Day Money-Back Guarantee\n\nTo purchase via Stripe or Razorpay checkout, our payment gateway is ready to be linked to your merchant account. Contact support@rewriteanywhere.com for direct invoice or corporate orders!`
-                );
-              }}
+              onClick={() => setIsCheckoutOpen(true)}
             >
               Get License Key ({currency === 'inr' ? '₹2,000 INR' : '$19 USD'})
             </button>
@@ -483,6 +481,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Checkout Modal with Cashfree and Coupon Support */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        initialCurrency={currency.toUpperCase()}
+      />
     </div>
   );
 }
