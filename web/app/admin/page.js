@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import BrandIcon from '../../components/BrandIcon';
 
-const AUTHORIZED_EMAIL = 'nishantmunjal2003@gmail.com';
 const DEFAULT_GOOGLE_CLIENT_ID = '698709002321-lhmhulia304qiqqj55lhehk5tn70k753.apps.googleusercontent.com';
 
 export default function AdminPage() {
