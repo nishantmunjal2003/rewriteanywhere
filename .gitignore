@@ -13,6 +13,7 @@
 *.nupkg
 *.snupkg
 *.zip
+!web/public/downloads/*
 packages/
 
 ## Inno Setup Output (keep output directory clean if desired, or exclude temp)
