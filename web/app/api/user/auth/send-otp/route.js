@@ -19,6 +19,13 @@ export async function POST(request) {
 
     const emailResult = await sendOtpEmail({ toEmail: cleanEmail, otpCode });
 
+    if (!emailResult.success) {
+      return NextResponse.json(
+        { success: false, message: emailResult.error || 'Failed to dispatch verification email.' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: `A 6-digit verification code has been sent to ${cleanEmail}. Please check your inbox.`,

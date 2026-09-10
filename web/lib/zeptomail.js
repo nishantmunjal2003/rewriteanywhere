@@ -71,10 +71,30 @@ export async function sendEmail({ toEmail, toName = '', subject, htmlBody, textB
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    let data = await res.json();
     if (!res.ok) {
-      console.error('ZeptoMail API error:', data);
-      return { success: false, error: data.message || 'Failed to dispatch email via ZeptoMail' };
+      console.error('ZeptoMail API error:', JSON.stringify(data));
+      // If the configured sender address is not verified in ZeptoMail yet (SM_111), fallback to the verified domain gkv.ac.in
+      const isUnverifiedSender = data.error?.details?.some((d) => d.code === 'SM_111' || d.message?.includes('not verified'));
+      if (isUnverifiedSender && payload.from.address !== 'noreply@gkv.ac.in') {
+        console.warn(`[ZeptoMail] Sender ${payload.from.address} not verified in Mail Agent. Retrying with verified sender noreply@gkv.ac.in...`);
+        payload.from.address = 'noreply@gkv.ac.in';
+        const retryRes = await fetch(ZEPTOMAIL_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify(payload)
+        });
+        const retryData = await retryRes.json();
+        if (retryRes.ok) {
+          return { success: true, isMock: false, data: retryData, fallbackUsed: true };
+        }
+        console.error('ZeptoMail retry failed:', JSON.stringify(retryData));
+      }
+      return { success: false, error: data.error?.details?.[0]?.message || data.message || 'Failed to dispatch email via ZeptoMail' };
     }
 
     return { success: true, isMock: false, data };
