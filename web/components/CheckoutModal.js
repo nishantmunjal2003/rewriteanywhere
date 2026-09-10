@@ -320,7 +320,6 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
               ) : (
                 <>
                   <span>Pay {currency === 'USD' ? `$${finalPrice}` : `₹${finalPrice.toLocaleString('en-IN')}`}</span>
-                  <span style={{ fontSize: '0.82rem', opacity: 0.9, fontWeight: 400 }}>(Cashfree / UPI / Cards)</span>
                   <span>→</span>
                 </>
               )}
