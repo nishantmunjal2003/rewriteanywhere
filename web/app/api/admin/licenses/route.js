@@ -1,24 +1,18 @@
 import { NextResponse } from 'next/server';
 import { generateLicenseKey, readLicenses, saveLicenses } from '../../../../lib/license-manager';
-
-const ADMIN_PASSCODE = process.env.ADMIN_SECRET || 'admin2026';
+import { getAdminSessionFromRequest } from '../../../../lib/admin-auth';
 
 function isAuthorized(request) {
-  const authHeader = request.headers.get('x-admin-passcode');
-  if (authHeader && authHeader === ADMIN_PASSCODE) {
-    return true;
-  }
-  const url = new URL(request.url);
-  const queryPass = url.searchParams.get('passcode');
-  if (queryPass && queryPass === ADMIN_PASSCODE) {
-    return true;
-  }
-  return false;
+  const session = getAdminSessionFromRequest(request);
+  return Boolean(session);
 }
 
 export async function GET(request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized. Invalid admin passcode.' }, { status: 401 });
+    return NextResponse.json(
+      { error: 'Unauthorized. Please sign in with Google as the authorized administrator.' },
+      { status: 401 }
+    );
   }
 
   const url = new URL(request.url);
@@ -41,7 +35,10 @@ export async function GET(request) {
 
 export async function POST(request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized. Invalid admin passcode.' }, { status: 401 });
+    return NextResponse.json(
+      { error: 'Unauthorized. Please sign in with Google as the authorized administrator.' },
+      { status: 401 }
+    );
   }
 
   try {

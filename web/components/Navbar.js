@@ -51,7 +51,7 @@ export default function Navbar() {
             <li><a href="/#features" className="nav-link">Features</a></li>
             <li><a href="/#simulator" className="nav-link">Live Demo</a></li>
             <li><a href="/#pricing" className="nav-link">Pricing</a></li>
-            <li><a href="/how-to-use" className="nav-link">How to Use & API Keys</a></li>
+            <li><a href="/how-to-use" className="nav-link">How to Use</a></li>
             <li><a href="/support" className="nav-link">Support</a></li>
           </ul>
         </nav>
@@ -60,8 +60,8 @@ export default function Navbar() {
         <div className="nav-actions">
           <ThemeToggle />
           <a href="/#pricing" className="btn btn-primary nav-cta-btn" onClick={closeMenu}>
-            <span className="cta-full">Buy License ($19 / ₹2,000)</span>
-            <span className="cta-mobile">Buy ($19)</span>
+            <span className="cta-full">Buy License</span>
+            <span className="cta-mobile">Buy License</span>
           </a>
 
           {/* Mobile Hamburger Toggle Button */}
@@ -115,7 +115,7 @@ export default function Navbar() {
               <li>
                 <a href="/how-to-use" className="mobile-nav-link" onClick={closeMenu}>
                   <span className="mobile-nav-icon">📖</span>
-                  <span>How to Use & API Keys</span>
+                  <span>How to Use</span>
                 </a>
               </li>
               <li>

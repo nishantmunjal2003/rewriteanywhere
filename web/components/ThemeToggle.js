@@ -43,15 +43,9 @@ export default function ThemeToggle() {
       aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
     >
       {theme === 'dark' ? (
-        <>
-          <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>☀️</span>
-          <span className="theme-toggle-text">Light</span>
-        </>
+        <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>☀️</span>
       ) : (
-        <>
-          <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🌙</span>
-          <span className="theme-toggle-text">Dark</span>
-        </>
+        <span style={{ fontSize: '1.05rem', lineHeight: 1 }}>🌙</span>
       )}
     </button>
   );

@@ -277,7 +277,7 @@
                                 <TextBlock Text="• OpenAI: Visit platform.openai.com/api-keys → Create new secret key." Foreground="#CBD5E1" FontSize="11" Margin="0,2" TextWrapping="Wrap"/>
                                 <TextBlock Text="• Anthropic Claude: Visit console.anthropic.com/settings/keys → Create Key." Foreground="#CBD5E1" FontSize="11" Margin="0,2" TextWrapping="Wrap"/>
                                 <TextBlock Margin="0,6,0,0">
-                                    <Hyperlink NavigateUri="https://rewriteanywhere.com/how-to-use#get-api-keys" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
+                                    <Hyperlink NavigateUri="https://rewriteanywhere.nishantmunjal.com/how-to-use#get-api-keys" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
                                         <Run Text="View Full Step-by-Step API Key Guide ↗" FontWeight="Medium"/>
                                     </Hyperlink>
                                 </TextBlock>
@@ -503,7 +503,7 @@
                                 <TextBlock Text="💎 Lifetime Commercial License" FontSize="14" FontWeight="SemiBold" Foreground="#38BDF8"/>
                                 <TextBlock Text="Get lifetime access for $19 USD (or ₹2,000 INR in India) with a 14-day 100% money-back guarantee." Style="{StaticResource SubLabelStyle}" Margin="0,2,0,8"/>
                                 <TextBlock Margin="0,4,0,0">
-                                    <Hyperlink NavigateUri="https://rewriteanywhere.com#pricing" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
+                                    <Hyperlink NavigateUri="https://rewriteanywhere.nishantmunjal.com#pricing" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#60A5FA" TextDecorations="None">
                                         <Run Text="Purchase or Manage License Online ↗" FontWeight="Medium"/>
                                     </Hyperlink>
                                 </TextBlock>

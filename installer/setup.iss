@@ -17,7 +17,12 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
+DisableWelcomePage=no
+DisableDirPage=no
 DisableProgramGroupPage=auto
+CloseApplications=force
+RestartApplications=no
+AppMutex=AIRewriteAnywhere_SingleInstance_Mutex
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupIconFile=app_icon.ico
 VersionInfoVersion={#MyAppVersion}
@@ -43,3 +48,22 @@ Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameter
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+function InitializeSetup(): Boolean;
+var
+  ErrorCode: Integer;
+begin
+  Exec('taskkill.exe', '/f /im AIRewriteAnywhere.exe', '', SW_HIDE, ewWaitUntilTerminated, ErrorCode);
+  Sleep(300);
+  Result := True;
+end;
+
+function InitializeUninstall(): Boolean;
+var
+  ErrorCode: Integer;
+begin
+  Exec('taskkill.exe', '/f /im AIRewriteAnywhere.exe', '', SW_HIDE, ewWaitUntilTerminated, ErrorCode);
+  Sleep(300);
+  Result := True;
+end;

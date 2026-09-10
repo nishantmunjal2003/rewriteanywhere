@@ -25,6 +25,11 @@ installer/Output/
 *.pfx
 credentials.json
 .env
+.env*.local
+.env.local
+
+## Logs
+*.log
 
 ## Node.js & Web
 node_modules/

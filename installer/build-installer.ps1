@@ -44,6 +44,9 @@ Write-Host "Found ISCC at: $isccPath" -ForegroundColor Green
 # 3. Compile Installer
 Write-Host "`n[3/3] Compiling Windows Installer (AI-Rewrite-Anywhere-Setup.exe)..." -ForegroundColor Cyan
 & "$isccPath" "installer\setup.iss"
+if ($LASTEXITCODE -ne 0) {
+    throw "Inno Setup Compiler failed with exit code $LASTEXITCODE"
+}
 
 $setupExe = Join-Path $rootDir "installer\AI-Rewrite-Anywhere-Setup.exe"
 if (Test-Path $setupExe) {
@@ -51,6 +54,13 @@ if (Test-Path $setupExe) {
     $sizeMb = [math]::Round($item.Length / 1048576, 2)
     Write-Host ""
     Write-Host "[OK] Installer created successfully at: $setupExe (${sizeMb} MB)" -ForegroundColor Green
+
+    # 4. Refresh installer.zip in workspace root
+    Write-Host "`n[4/4] Updating installer.zip in root..." -ForegroundColor Cyan
+    $zipPath = Join-Path $rootDir "installer.zip"
+    if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+    Compress-Archive -Path (Join-Path $rootDir "installer\*") -DestinationPath $zipPath -Force
+    Write-Host "[OK] installer.zip refreshed successfully." -ForegroundColor Green
 } else {
     throw "Installer generation failed."
 }

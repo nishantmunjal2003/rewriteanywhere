@@ -134,7 +134,7 @@ export default function HomePage() {
 
           <p className="subheading">
             Highlight text in Chrome, Outlook, Slack, WhatsApp, Word, or any Windows app. Press{' '}
-            <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>Ctrl+Shift+R</kbd>{' '}
+            <kbd className="hero-kbd">Ctrl+Shift+R</kbd>{' '}
             or tap the glowing assistant to instantly rewrite, polish, translate, or format your thoughts with Gemini, OpenAI, or Claude.
           </p>
 
@@ -234,7 +234,7 @@ export default function HomePage() {
       </section>
 
       {/* Feature Showcase */}
-      <section id="features" className="section" style={{ background: 'rgba(12, 17, 29, 0.5)' }}>
+      <section id="features" className="section section-surface">
         <div className="container">
           <div className="text-center" style={{ marginBottom: '56px' }}>
             <span className="badge" style={{ marginBottom: '14px' }}>Engineered For Peak Productivity</span>
@@ -357,7 +357,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="section" style={{ background: 'rgba(10, 14, 24, 0.8)' }}>
+      <section id="pricing" className="section section-surface">
         <div className="container">
           <div className="text-center" style={{ marginBottom: '32px' }}>
             <span className="badge badge-guarantee" style={{ marginBottom: '14px' }}>

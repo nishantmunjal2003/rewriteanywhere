@@ -23,15 +23,13 @@ public class LicenseService : ILicenseService
 
     public static readonly string[] ActivationEndpoints = new[]
     {
-        "http://localhost:3000/api/license/activate",
-        "http://127.0.0.1:3000/api/license/activate",
+        "https://rewriteanywhere.nishantmunjal.com/api/license/activate",
         "https://rewriteanywhere.com/api/license/activate"
     };
 
     public static readonly string[] VerificationEndpoints = new[]
     {
-        "http://localhost:3000/api/license/verify",
-        "http://127.0.0.1:3000/api/license/verify",
+        "https://rewriteanywhere.nishantmunjal.com/api/license/verify",
         "https://rewriteanywhere.com/api/license/verify"
     };
 
@@ -101,7 +99,7 @@ public class LicenseService : ILicenseService
 
         var machineId = MachineId;
 
-        // Try online activation against configured endpoints (localhost:3000 first)
+        // Try online activation against configured endpoints (https://rewriteanywhere.nishantmunjal.com first)
         bool serverReached = false;
         string? serverErrorMessage = null;
 
@@ -181,7 +179,7 @@ public class LicenseService : ILicenseService
             return new LicenseActivationResult(false, serverErrorMessage);
         }
 
-        return new LicenseActivationResult(false, "Could not connect to online licensing server (http://localhost:3000). Please ensure your web server is running and try again.");
+        return new LicenseActivationResult(false, "Could not connect to online licensing server (https://rewriteanywhere.nishantmunjal.com). Please check your internet connection and try again.");
     }
 
     public async Task<bool> VerifyLicenseOnlineAsync()

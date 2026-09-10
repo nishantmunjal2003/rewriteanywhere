@@ -2,10 +2,19 @@
 
 import { useState, useEffect } from 'react';
 
+const AUTHORIZED_EMAIL = 'nishantmunjal2003@gmail.com';
+const DEFAULT_GOOGLE_CLIENT_ID = '698709002321-lhmhulia304qiqqj55lhehk5tn70k753.apps.googleusercontent.com';
+
 export default function AdminPage() {
-  const [passcode, setPasscode] = useState('');
+  const [adminUser, setAdminUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Google OAuth Client ID setup
+  const [activeGoogleClientId, setActiveGoogleClientId] = useState('');
+  const [customClientId, setCustomClientId] = useState('');
+  const [isGoogleScriptLoaded, setIsGoogleScriptLoaded] = useState(false);
 
   const [licenses, setLicenses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,61 +34,209 @@ export default function AdminPage() {
   const [releaseInput, setReleaseInput] = useState('');
   const [isReleasing, setIsReleasing] = useState(false);
 
-  // Check saved session
-  useEffect(() => {
-    const saved = localStorage.getItem('arw_admin_passcode');
-    if (saved) {
-      setPasscode(saved);
-      verifyAndLoad(saved);
-    }
-  }, []);
-
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 4500);
   };
 
-  const verifyAndLoad = async (codeToTest) => {
-    setLoading(true);
+  // Helper for authenticated fetch with credentials (cookie) and Bearer token
+  const authFetch = async (url, options = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('arw_admin_token') : null;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include'
+    });
+
+    if (res.status === 401 || res.status === 403) {
+      setIsAuthenticated(false);
+      setAdminUser(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('arw_admin_token');
+      }
+    }
+
+    return res;
+  };
+
+  // 1. Initialize Client ID & Check Session on mount
+  useEffect(() => {
+    const envClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    const storedClientId = localStorage.getItem('arw_google_client_id') || '';
+    const selectedClientId = envClientId || storedClientId || DEFAULT_GOOGLE_CLIENT_ID;
+    setActiveGoogleClientId(selectedClientId);
+    if (storedClientId) {
+      setCustomClientId(storedClientId);
+    }
+
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    setIsInitializing(true);
     try {
-      const res = await fetch('/api/admin/licenses', {
-        headers: { 'x-admin-passcode': codeToTest }
-      });
+      const res = await authFetch('/api/admin/auth/session');
       if (res.ok) {
         const data = await res.json();
-        setLicenses(data.licenses || []);
-        setIsAuthenticated(true);
-        localStorage.setItem('arw_admin_passcode', codeToTest);
-        setAuthError('');
+        if (data.authenticated && data.user) {
+          setIsAuthenticated(true);
+          setAdminUser(data.user);
+          loadLicenses();
+        } else {
+          setIsAuthenticated(false);
+          setAdminUser(null);
+        }
       } else {
         setIsAuthenticated(false);
-        setAuthError('Invalid passcode. Default is admin2026.');
+        setAdminUser(null);
       }
     } catch (err) {
-      setAuthError('Network error connecting to admin service.');
+      console.error('Session check failed:', err);
+      setIsAuthenticated(false);
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+
+  // 2. Load Google Identity Services Script
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.google?.accounts?.id) {
+      setIsGoogleScriptLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      setIsGoogleScriptLoaded(true);
+    };
+    script.onerror = () => {
+      setAuthError('Failed to load Google Sign-In SDK. Please check your network connection.');
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  // 3. Render Google Sign-In button when script & client ID are ready
+  useEffect(() => {
+    if (!isAuthenticated && activeGoogleClientId && isGoogleScriptLoaded && !isInitializing) {
+      try {
+        if (window.google?.accounts?.id) {
+          window.google.accounts.id.initialize({
+            client_id: activeGoogleClientId,
+            callback: handleGoogleCallback,
+            auto_select: false
+          });
+
+          const btnEl = document.getElementById('googleSignInBtn');
+          if (btnEl) {
+            btnEl.innerHTML = '';
+            window.google.accounts.id.renderButton(btnEl, {
+              theme: 'filled_blue',
+              size: 'large',
+              type: 'standard',
+              shape: 'pill',
+              text: 'signin_with',
+              logo_alignment: 'left',
+              width: 320
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Google Sign-In render error:', err);
+      }
+    }
+  }, [isAuthenticated, activeGoogleClientId, isGoogleScriptLoaded, isInitializing]);
+
+  const handleGoogleCallback = async (response) => {
+    if (!response || !response.credential) {
+      setAuthError('Google sign in did not return valid credentials.');
+      return;
+    }
+
+    setLoading(true);
+    setAuthError('');
+
+    try {
+      const res = await fetch('/api/admin/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: response.credential })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAuthenticated(true);
+        setAdminUser(data.user);
+        if (data.token) {
+          localStorage.setItem('arw_admin_token', data.token);
+        }
+        showToast(`Signed in as ${data.user.email}`);
+        loadLicenses();
+      } else {
+        setIsAuthenticated(false);
+        setAuthError(data.message || 'Access denied: Account is not authorized.');
+      }
+    } catch (err) {
+      setAuthError('Network error connecting to authentication server.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = (e) => {
+  const handleSaveCustomClientId = (e) => {
     e.preventDefault();
-    if (!passcode) return;
-    verifyAndLoad(passcode);
+    const cleanId = customClientId.trim();
+    if (!cleanId) {
+      setAuthError('Please enter a valid Google OAuth Client ID.');
+      return;
+    }
+    localStorage.setItem('arw_google_client_id', cleanId);
+    setActiveGoogleClientId(cleanId);
+    setAuthError('');
+    showToast('Google Client ID configured.');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' });
+    } catch (err) {
+      // ignore
+    }
+    localStorage.removeItem('arw_admin_token');
     localStorage.removeItem('arw_admin_passcode');
     setIsAuthenticated(false);
-    setPasscode('');
+    setAdminUser(null);
     setLicenses([]);
+    showToast('Logged out of Admin Portal.');
+  };
+
+  const loadLicenses = async () => {
+    try {
+      const res = await authFetch('/api/admin/licenses');
+      if (res.ok) {
+        const data = await res.json();
+        setLicenses(data.licenses || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchLicenses = async () => {
     try {
-      const res = await fetch(`/api/admin/licenses?search=${encodeURIComponent(searchQuery)}`, {
-        headers: { 'x-admin-passcode': passcode }
-      });
+      const res = await authFetch(`/api/admin/licenses?search=${encodeURIComponent(searchQuery)}`);
       if (res.ok) {
         const data = await res.json();
         setLicenses(data.licenses || []);
@@ -103,12 +260,8 @@ export default function AdminPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/licenses', {
+      const res = await authFetch('/api/admin/licenses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-passcode': passcode
-        },
         body: JSON.stringify({
           action: 'create',
           tier: issueTier,
@@ -147,12 +300,8 @@ export default function AdminPage() {
     const isHwid = releaseInput.trim().toUpperCase().startsWith('HWID-');
 
     try {
-      const res = await fetch('/api/admin/licenses', {
+      const res = await authFetch('/api/admin/licenses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-passcode': passcode
-        },
         body: JSON.stringify({
           action: 'release',
           licenseKey: isHwid ? null : releaseInput.trim(),
@@ -183,12 +332,8 @@ export default function AdminPage() {
     }
 
     try {
-      const res = await fetch('/api/admin/licenses', {
+      const res = await authFetch('/api/admin/licenses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-passcode': passcode
-        },
         body: JSON.stringify({ action: 'release', licenseKey })
       });
       const data = await res.json();
@@ -209,12 +354,8 @@ export default function AdminPage() {
     if (reason === null) return;
 
     try {
-      const res = await fetch('/api/admin/licenses', {
+      const res = await authFetch('/api/admin/licenses', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-passcode': passcode
-        },
         body: JSON.stringify({ action: 'revoke', licenseKey, reason })
       });
       const data = await res.json();
@@ -252,53 +393,108 @@ export default function AdminPage() {
 
   // Unauthenticated Login Screen
   if (!isAuthenticated) {
+    if (isInitializing) {
+      return (
+        <div className="section" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span>⚡</span>
+            <span>Verifying administrative session...</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="section" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
-        <div className="container" style={{ maxWidth: '440px' }}>
-          <div className="card" style={{ padding: '40px' }}>
-            <div className="text-center" style={{ marginBottom: '24px' }}>
-              <div className="logo-icon" style={{ margin: '0 auto 16px', width: '48px', height: '48px', fontSize: '1.4rem' }}>
+        <div className="container" style={{ maxWidth: '460px' }}>
+          <div className="card" style={{ padding: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', border: '1px solid var(--border-subtle)' }}>
+            <div className="text-center" style={{ marginBottom: '28px' }}>
+              <div className="logo-icon" style={{ margin: '0 auto 16px', width: '52px', height: '52px', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 ⚡
               </div>
-              <h1 className="heading-md">License Administration</h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Enter your administrative passcode to manage product keys and hardware bindings.
+              <h1 className="heading-md" style={{ marginBottom: '8px' }}>License Administration</h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                Access is restricted to the authorized administrator.
               </p>
             </div>
 
             {authError && (
-              <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', color: '#fca5a5', padding: '12px 14px', borderRadius: 'var(--radius-md)', fontSize: '0.88rem', marginBottom: '16px' }}>
+              <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', color: '#fca5a5', padding: '12px 16px', borderRadius: 'var(--radius-md)', fontSize: '0.88rem', marginBottom: '20px', lineHeight: '1.4' }}>
                 {authError}
               </div>
             )}
 
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                  Admin Master Passcode
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="Enter passcode (default: admin2026)"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    background: 'rgba(10, 13, 20, 0.8)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--text-primary)',
-                    outline: 'none'
-                  }}
-                />
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '24px' }}>
+              <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '6px' }}>
+                Authorized Administrator
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '0.95rem' }}>
+                <span>🔒</span>
+                <span>{AUTHORIZED_EMAIL}</span>
+              </div>
+            </div>
 
-              <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
-                {loading ? 'Authenticating...' : 'Unlock Admin Portal →'}
-              </button>
-            </form>
+            {/* Google Sign-In Button Container */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%' }}>
+              {activeGoogleClientId ? (
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div id="googleSignInBtn" style={{ minHeight: '44px', display: 'flex', justifyContent: 'center', width: '100%' }}></div>
+                  {loading && (
+                    <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Authenticating Google credentials...
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ width: '100%', textAlign: 'left' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Google OAuth Web Client ID
+                  </label>
+                  <input
+                    type="text"
+                    value={customClientId}
+                    onChange={(e) => setCustomClientId(e.target.value)}
+                    placeholder="Enter Client ID (...apps.googleusercontent.com)"
+                    style={{
+                      width: '100%',
+                      padding: '10px 14px',
+                      background: 'rgba(10, 13, 20, 0.8)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.85rem',
+                      marginBottom: '10px',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={handleSaveCustomClientId}
+                    className="btn btn-primary"
+                    style={{ width: '100%', fontSize: '0.88rem' }}
+                  >
+                    Configure Google Client ID →
+                  </button>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '8px', lineHeight: '1.4' }}>
+                    Or set <code style={{ color: '#38bdf8' }}>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> in your server environment variables.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {activeGoogleClientId && (
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('arw_google_client_id');
+                    setActiveGoogleClientId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '');
+                    setCustomClientId('');
+                  }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Configure a different Google Client ID
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -334,7 +530,7 @@ export default function AdminPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span className="badge badge-windows">Admin Control Panel</span>
-              <span className="badge badge-guarantee">HWID Binding Manager</span>
+              <span className="badge badge-guarantee">Google Verified</span>
             </div>
             <h1 className="heading-lg" style={{ marginTop: '8px', marginBottom: '4px' }}>
               Product Key & Hardware ID Administration
@@ -344,12 +540,27 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {adminUser && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', padding: '6px 14px', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-subtle)' }}>
+                {adminUser.picture ? (
+                  <img src={adminUser.picture} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
+                ) : (
+                  <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>
+                    {adminUser.name?.[0] || 'N'}
+                  </span>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{adminUser.name || 'Admin'}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{adminUser.email}</span>
+                </div>
+              </div>
+            )}
             <button onClick={fetchLicenses} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.88rem' }}>
-              🔄 Refresh Data
+              🔄 Refresh
             </button>
             <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '0.88rem', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}>
-              Logout
+              Sign Out
             </button>
           </div>
         </div>
