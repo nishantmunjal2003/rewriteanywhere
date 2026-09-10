@@ -20,6 +20,10 @@ export default function AdminPage() {
   const [licenses, setLicenses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterTier, setFilterTier] = useState('all'); // 'all' | 'INR_1600' | 'USD_19' | 'INR_2000'
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'oldest' | 'key' | 'name'
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(null);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
 
@@ -268,6 +272,13 @@ export default function AdminPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadLicenses();
+    setIsRefreshing(false);
+    showToast('Licenses refreshed from database.');
+  };
+
   const fetchCoupons = async () => {
     try {
       const res = await authFetch('/api/admin/coupons');
@@ -455,20 +466,124 @@ export default function AdminPage() {
     }
   };
 
-  // Copy helper
+  // Copy helper with feedback
   const copyToClipboard = (text, label = 'Copied!') => {
     navigator.clipboard.writeText(text);
+    setCopiedKey(text);
+    setTimeout(() => setCopiedKey(null), 2500);
     showToast(`${label} copied to clipboard.`);
   };
 
-  // Filtered list
-  const filteredLicenses = licenses.filter((l) => {
-    if (filterStatus === 'all') return true;
-    if (filterStatus === 'active') return l.status === 'active' && l.activeMachineId;
-    if (filterStatus === 'unactivated') return l.status === 'unactivated' || !l.activeMachineId;
-    if (filterStatus === 'revoked') return l.status === 'revoked';
-    return true;
-  });
+  // Format Tier Price properly
+  const formatTierPrice = (lic) => {
+    if (lic.price && typeof lic.price === 'string' && (lic.price.includes('₹') || lic.price.includes('$'))) {
+      return lic.price;
+    }
+    if (lic.price && typeof lic.price === 'number') {
+      return lic.currency === 'USD' ? `$${lic.price} USD` : `₹${lic.price.toLocaleString('en-IN')} INR`;
+    }
+    if (lic.tier === 'INR_1600' || lic.tier === 'COMMERCIAL_INR') {
+      return '₹1,600 INR';
+    }
+    if (lic.tier === 'INR_2000') {
+      return '₹2,000 INR';
+    }
+    return '$19 USD';
+  };
+
+  // Export filtered licenses to CSV
+  const handleExportCsv = () => {
+    if (!filteredLicenses.length) {
+      showToast('No licenses to export.', 'error');
+      return;
+    }
+    const headers = ['License Key', 'Customer Name', 'Customer Email', 'Tier', 'Price', 'Status', 'Machine ID (HWID)', 'Order ID', 'Created At', 'Activated At'];
+    const rows = filteredLicenses.map(lic => [
+      lic.licenseKey,
+      lic.customerName || '',
+      lic.assignedEmail || lic.email || '',
+      lic.tier || '',
+      formatTierPrice(lic),
+      lic.status || '',
+      lic.activeMachineId || '',
+      lic.orderId || '',
+      lic.createdAt ? new Date(lic.createdAt).toISOString() : '',
+      lic.activatedAt ? new Date(lic.activatedAt).toISOString() : ''
+    ]);
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `arw-licenses-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Exported ${filteredLicenses.length} licenses to CSV.`);
+  };
+
+  // Filtered and Sorted list
+  const filteredLicenses = licenses
+    .filter((l) => {
+      // 1. Status Filter
+      if (filterStatus === 'active' && !(l.status === 'active' && l.activeMachineId)) return false;
+      if (filterStatus === 'unactivated' && !(l.status === 'unactivated' || !l.activeMachineId)) return false;
+      if (filterStatus === 'revoked' && l.status !== 'revoked') return false;
+
+      // 2. Tier Filter
+      if (filterTier !== 'all') {
+        const t = (l.tier || '').toUpperCase();
+        if (filterTier === 'INR_1600' && t !== 'INR_1600' && t !== 'COMMERCIAL_INR') return false;
+        if (filterTier === 'USD_19' && t !== 'USD_19' && t !== 'COMMERCIAL_USD') return false;
+        if (filterTier === 'INR_2000' && t !== 'INR_2000') return false;
+      }
+
+      // 3. Search Query Filter (key, HWID, email, name, orderId, notes, price)
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        const key = (l.licenseKey || '').toLowerCase();
+        const hwid = (l.activeMachineId || '').toLowerCase();
+        const email = (l.assignedEmail || l.email || '').toLowerCase();
+        const name = (l.customerName || '').toLowerCase();
+        const order = (l.orderId || '').toLowerCase();
+        const notes = (l.notes || '').toLowerCase();
+        const price = (l.price || '').toString().toLowerCase();
+
+        const matches =
+          key.includes(q) ||
+          hwid.includes(q) ||
+          email.includes(q) ||
+          name.includes(q) ||
+          order.includes(q) ||
+          notes.includes(q) ||
+          price.includes(q);
+
+        if (!matches) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      }
+      if (sortBy === 'oldest') {
+        return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      }
+      if (sortBy === 'key') {
+        return (a.licenseKey || '').localeCompare(b.licenseKey || '');
+      }
+      if (sortBy === 'name') {
+        return (a.customerName || 'zzz').localeCompare(b.customerName || 'zzz');
+      }
+      if (sortBy === 'status') {
+        return (a.status || '').localeCompare(b.status || '');
+      }
+      return 0;
+    });
 
   // Stats calculation
   const totalCount = licenses.length;
@@ -530,17 +645,8 @@ export default function AdminPage() {
                     value={customClientId}
                     onChange={(e) => setCustomClientId(e.target.value)}
                     placeholder="Enter Client ID (...apps.googleusercontent.com)"
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                      marginBottom: '10px',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
+                    style={{ marginBottom: '10px' }}
                   />
                   <button
                     onClick={handleSaveCustomClientId}
@@ -590,7 +696,10 @@ export default function AdminPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span className="badge badge-windows">Admin Control Panel</span>
-              <span className="badge badge-guarantee">Google Verified</span>
+              <span className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', background: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.35)', color: 'var(--accent-emerald)' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-emerald)', display: 'inline-block' }}></span>
+                Live Database Active
+              </span>
             </div>
             <h1 className="heading-lg" style={{ marginTop: '8px', marginBottom: '4px' }}>
               Product Key & Hardware ID Administration
@@ -671,10 +780,10 @@ export default function AdminPage() {
                     top: 'calc(100% + 8px)',
                     right: 0,
                     width: '260px',
-                    background: 'var(--card-bg, #111827)',
+                    background: 'var(--bg-surface-elevated, var(--bg-card))',
                     border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-lg)',
-                    boxShadow: '0 18px 40px rgba(0, 0, 0, 0.45)',
+                    boxShadow: 'var(--shadow-md)',
                     padding: '8px',
                     zIndex: 100,
                     backdropFilter: 'blur(16px)',
@@ -809,57 +918,32 @@ export default function AdminPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '32px', paddingBottom: '4px' }}>
+        <div className="admin-nav-tabs-wrapper">
           <button
             onClick={() => setActiveTab('licenses')}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              cursor: 'pointer',
-              background: activeTab === 'licenses' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              color: activeTab === 'licenses' ? '#ffffff' : 'var(--text-muted)',
-              borderBottom: activeTab === 'licenses' ? '2px solid var(--accent-primary)' : '2px solid transparent'
-            }}
+            className={`admin-nav-tab-btn ${activeTab === 'licenses' ? 'active' : ''}`}
           >
-            🔑 Licenses & Devices ({totalCount})
+            <span>🔑</span>
+            <span>Licenses & Devices</span>
+            <span className="admin-pill-count">{totalCount}</span>
           </button>
           <button
             onClick={() => {
               setActiveTab('coupons');
               fetchCoupons();
             }}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              cursor: 'pointer',
-              background: activeTab === 'coupons' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              color: activeTab === 'coupons' ? '#ffffff' : 'var(--text-muted)',
-              borderBottom: activeTab === 'coupons' ? '2px solid var(--accent-primary)' : '2px solid transparent'
-            }}
+            className={`admin-nav-tab-btn ${activeTab === 'coupons' ? 'active' : ''}`}
           >
-            🎟️ Discount Coupons ({coupons.length})
+            <span>🎟️</span>
+            <span>Discount Coupons</span>
+            <span className="admin-pill-count">{coupons.length}</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
-              border: 'none',
-              fontWeight: 700,
-              fontSize: '0.92rem',
-              cursor: 'pointer',
-              background: activeTab === 'settings' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              color: activeTab === 'settings' ? '#ffffff' : 'var(--text-muted)',
-              borderBottom: activeTab === 'settings' ? '2px solid var(--accent-primary)' : '2px solid transparent'
-            }}
+            className={`admin-nav-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
           >
-            ⚙️ Gateway & API Settings
+            <span>⚙️</span>
+            <span>Gateway & API Settings</span>
           </button>
         </div>
 
@@ -867,54 +951,54 @@ export default function AdminPage() {
           <>
             {/* Metrics Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '36px' }}>
-          <div className="card" style={{ padding: '24px' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Total Issued Keys
-            </span>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, marginTop: '6px', color: '#ffffff' }}>
-              {totalCount}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Database records
-            </div>
-          </div>
+              <div className="admin-metric-card">
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Total Issued Keys
+                </span>
+                <div className="admin-metric-num" style={{ color: 'var(--text-primary)' }}>
+                  {totalCount}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Catalog database records
+                </div>
+              </div>
 
-          <div className="card" style={{ padding: '24px', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Active Bound Devices
-            </span>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, marginTop: '6px', color: '#34d399' }}>
-              {activeCount}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Currently locked to a PC HWID
-            </div>
-          </div>
+              <div className="admin-metric-card" style={{ borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--accent-emerald)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Active Bound Devices
+                </span>
+                <div className="admin-metric-num" style={{ color: 'var(--accent-emerald)' }}>
+                  {activeCount}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Locked to 1 Windows PC
+                </div>
+              </div>
 
-          <div className="card" style={{ padding: '24px', borderColor: 'rgba(99, 102, 241, 0.3)' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Available / Unbound Keys
-            </span>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, marginTop: '6px', color: '#a5b4fc' }}>
-              {availableCount}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Ready for customer activation
-            </div>
-          </div>
+              <div className="admin-metric-card" style={{ borderColor: 'rgba(99, 102, 241, 0.35)' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--accent-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Available / Unbound
+                </span>
+                <div className="admin-metric-num" style={{ color: 'var(--accent-primary)' }}>
+                  {availableCount}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Ready for customer PC activation
+                </div>
+              </div>
 
-          <div className="card" style={{ padding: '24px', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-            <span style={{ fontSize: '0.85rem', color: '#f87171', fontWeight: 600, textTransform: 'uppercase' }}>
-              Revoked / Refunded
-            </span>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, marginTop: '6px', color: '#f87171' }}>
-              {revokedCount}
+              <div className="admin-metric-card" style={{ borderColor: 'rgba(239, 68, 68, 0.35)' }}>
+                <span style={{ fontSize: '0.82rem', color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Revoked / Refunded
+                </span>
+                <div className="admin-metric-num" style={{ color: '#ef4444' }}>
+                  {revokedCount}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Blocked from activation
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Blocked from further use
-            </div>
-          </div>
-        </div>
 
         {/* Action Panel: Quick Release by Hardware Key & Issue New Key */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', marginBottom: '40px' }}>
@@ -940,17 +1024,8 @@ export default function AdminPage() {
                     value={releaseInput}
                     onChange={(e) => setReleaseInput(e.target.value)}
                     placeholder="e.g. HWID-A4F2-81B3-99E0-47CD or ARW-..."
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.9rem',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}
                   />
                 </div>
 
@@ -959,10 +1034,14 @@ export default function AdminPage() {
                   disabled={isReleasing}
                   className="btn btn-secondary"
                   style={{
-                    background: 'rgba(6, 182, 212, 0.15)',
-                    borderColor: 'rgba(6, 182, 212, 0.4)',
-                    color: '#67e8f9',
-                    fontWeight: 600
+                    background: 'rgba(2, 132, 199, 0.1)',
+                    borderColor: 'rgba(2, 132, 199, 0.35)',
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
                   }}
                 >
                   {isReleasing ? 'Releasing Binding...' : '🔓 Release Hardware Binding Now'}
@@ -970,8 +1049,8 @@ export default function AdminPage() {
               </form>
             </div>
 
-            <div style={{ marginTop: '20px', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              💡 <strong>Tip:</strong> When released, the active machine ID is erased (`null`), and the key can be activated on the customer\'s new computer without issuing a new order.
+            <div className="admin-tip-box" style={{ marginTop: '20px' }}>
+              💡 <strong>Tip:</strong> When released, the active machine ID is erased (<code>null</code>), and the key can be activated on the customer's new computer without issuing a new order.
             </div>
           </div>
 
@@ -994,15 +1073,7 @@ export default function AdminPage() {
                   <select
                     value={issueTier}
                     onChange={(e) => setIssueTier(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      outline: 'none'
-                    }}
+                    className="admin-field-select"
                   >
                     <option value="USD_19">$19 USD (International Lifetime)</option>
                     <option value="INR_1600">₹1,600 INR (India Special Lifetime)</option>
@@ -1018,15 +1089,7 @@ export default function AdminPage() {
                     value={issueEmail}
                     onChange={(e) => setIssueEmail(e.target.value)}
                     placeholder="user@example.com"
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
                   />
                 </div>
               </div>
@@ -1041,15 +1104,7 @@ export default function AdminPage() {
                     value={issueCustomerName}
                     onChange={(e) => setIssueCustomerName(e.target.value)}
                     placeholder="Dr. Nishant Munjal"
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
                   />
                 </div>
 
@@ -1062,17 +1117,8 @@ export default function AdminPage() {
                     value={issueInitialHwid}
                     onChange={(e) => setIssueInitialHwid(e.target.value)}
                     placeholder="Leave empty for auto-bind on first use"
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.85rem',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}
                   />
                 </div>
               </div>
@@ -1084,12 +1130,12 @@ export default function AdminPage() {
 
             {/* Newly Created Key Alert Box */}
             {createdLicense && (
-              <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid var(--accent-primary)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: '0.85rem', color: '#a5b4fc', marginBottom: '6px', fontWeight: 600 }}>
+              <div style={{ marginTop: '20px', padding: '16px', background: 'var(--bg-surface-elevated)', border: '1px solid var(--accent-primary)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginBottom: '6px', fontWeight: 600 }}>
                   Generated Product Key:
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-                  <code style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  <code className="admin-key-code" style={{ fontSize: '1.15rem' }}>
                     {createdLicense.licenseKey}
                   </code>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -1102,7 +1148,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={() => {
-                        const emailSnippet = `Hi ${createdLicense.customerName || 'there'},\n\nThank you for purchasing AI Rewrite Anywhere!\n\nHere is your lifetime commercial product key:\n${createdLicense.licenseKey}\n\nPrice: ${createdLicense.price}\nEnvironment: Windows 10 & 11 (64-bit)\nPolicy: 1 Active Windows PC\nGuarantee: 14-Day Money-Back Guarantee\n\nHow to activate:\n1. Open AI Rewrite Anywhere on your Windows PC.\n2. Right-click the tray icon -> Settings -> License & Protection.\n3. Paste your key and click Activate License.\n\nEnjoy rewriting!\nAI Rewrite Anywhere Team`;
+                        const emailSnippet = `Hi ${createdLicense.customerName || 'there'},\n\nThank you for purchasing AI Rewrite Anywhere!\n\nHere is your lifetime commercial product key:\n${createdLicense.licenseKey}\n\nPrice: ${formatTierPrice(createdLicense)}\nEnvironment: Windows 10 & 11 (64-bit)\nPolicy: 1 Active Windows PC\nGuarantee: 14-Day Money-Back Guarantee\n\nHow to activate:\n1. Open AI Rewrite Anywhere on your Windows PC.\n2. Right-click the tray icon -> Settings -> License & Protection.\n3. Paste your key and click Activate License.\n\nEnjoy rewriting!\nAI Rewrite Anywhere Team`;
                         copyToClipboard(emailSnippet, 'Customer Email Template');
                       }}
                       className="btn btn-primary"
@@ -1119,55 +1165,141 @@ export default function AdminPage() {
 
         {/* License Database Table */}
         <div className="card" style={{ padding: '28px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+          {/* Top Header with title, count, and export / refresh */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
             <div>
-              <h2 className="heading-md" style={{ margin: 0 }}>License Catalog & HWID Records</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Showing {filteredLicenses.length} of {totalCount} total keys
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h2 className="heading-md" style={{ margin: 0 }}>License Catalog & HWID Records</h2>
+                <span style={{ fontSize: '0.78rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                  Live DB
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px', marginBottom: 0 }}>
+                Showing <strong>{filteredLicenses.length}</strong> of <strong>{totalCount}</strong> total keys
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              {/* Search Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="btn btn-secondary"
+                style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                title="Reload fresh data from database"
+              >
+                <span style={{ display: 'inline-block', transform: isRefreshing ? 'rotate(360deg)' : 'none', transition: 'transform 0.6s ease' }}>
+                  🔄
+                </span>
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
+
+              <button
+                onClick={handleExportCsv}
+                className="btn btn-secondary"
+                style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                title="Export filtered records to CSV"
+              >
+                <span>📥</span>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px', marginBottom: '24px', padding: '16px', background: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            {/* Search Input Box */}
+            <div style={{ position: 'relative', flex: '1 1 280px', minWidth: '240px' }}>
+              <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.9rem', pointerEvents: 'none' }}>
+                🔍
+              </span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search key, HWID, email, name..."
-                style={{
-                  padding: '8px 14px',
-                  background: 'rgba(10, 13, 20, 0.8)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.88rem',
-                  outline: 'none',
-                  minWidth: '260px'
-                }}
+                placeholder="Search by key, HWID, email, name..."
+                className="admin-field-input"
+                style={{ paddingLeft: '36px', paddingRight: searchQuery ? '36px' : '14px' }}
               />
-
-              {/* Status Filter */}
-              <div style={{ display: 'flex', background: 'rgba(10, 13, 20, 0.8)', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-subtle)', padding: '3px' }}>
-                {['all', 'active', 'unactivated', 'revoked'].map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setFilterStatus(st)}
-                    style={{
-                      padding: '5px 14px',
-                      borderRadius: 'var(--radius-full)',
-                      border: 'none',
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      background: filterStatus === st ? 'var(--accent-primary)' : 'transparent',
-                      color: filterStatus === st ? '#ffffff' : 'var(--text-muted)'
-                    }}
-                  >
-                    {st === 'all' ? 'All' : st === 'active' ? 'Active' : st === 'unactivated' ? 'Available' : 'Revoked'}
-                  </button>
-                ))}
-              </div>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  title="Clear search"
+                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem', padding: '2px 6px' }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
+
+            {/* Status Filter Pills */}
+            <div className="admin-filter-pill-container">
+              {[
+                { id: 'all', label: 'All', count: totalCount },
+                { id: 'active', label: 'Active', count: activeCount },
+                { id: 'unactivated', label: 'Available', count: availableCount },
+                { id: 'revoked', label: 'Revoked', count: revokedCount }
+              ].map((st) => (
+                <button
+                  key={st.id}
+                  onClick={() => setFilterStatus(st.id)}
+                  className={`admin-filter-pill-btn ${filterStatus === st.id ? 'active' : ''}`}
+                >
+                  <span>{st.label}</span>
+                  <span className="admin-pill-count">{st.count}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Tier Filter Select */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                Tier:
+              </label>
+              <select
+                value={filterTier}
+                onChange={(e) => setFilterTier(e.target.value)}
+                className="admin-field-select"
+                style={{ width: 'auto', minWidth: '130px', padding: '7px 12px', fontSize: '0.85rem' }}
+              >
+                <option value="all">All Tiers</option>
+                <option value="INR_1600">₹1,600 INR</option>
+                <option value="USD_19">$19 USD</option>
+              </select>
+            </div>
+
+            {/* Sort By Select */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                Sort:
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="admin-field-select"
+                style={{ width: 'auto', minWidth: '140px', padding: '7px 12px', fontSize: '0.85rem' }}
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="customer">Customer Name</option>
+                <option value="status">Status</option>
+              </select>
+            </div>
+
+            {/* Reset Filters button if any active filter */}
+            {(searchQuery || filterStatus !== 'all' || filterTier !== 'all' || sortBy !== 'newest') && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterStatus('all');
+                  setFilterTier('all');
+                  setSortBy('newest');
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '7px 12px', fontSize: '0.82rem', color: '#ef4444', borderColor: 'rgba(239,68,68,0.35)' }}
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
 
           {/* Table */}
@@ -1197,21 +1329,15 @@ export default function AdminPage() {
                       <tr key={lic.licenseKey}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <code style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#ffffff' }}>
+                            <code className="admin-key-code">
                               {lic.licenseKey}
                             </code>
                             <button
                               title="Copy License Key"
                               onClick={() => copyToClipboard(lic.licenseKey, 'License Key')}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: 'var(--text-muted)',
-                                fontSize: '0.9rem'
-                              }}
+                              className="admin-quick-btn"
                             >
-                              📋
+                              {copiedKey === lic.licenseKey ? '✓' : '📋'}
                             </button>
                           </div>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -1232,14 +1358,14 @@ export default function AdminPage() {
 
                         <td>
                           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                            {lic.price || (lic.tier?.startsWith('INR') ? '₹1,600 INR' : '$19 USD')}
+                            {formatTierPrice(lic)}
                           </span>
                         </td>
 
                         <td>
                           {lic.activeMachineId ? (
                             <div>
-                              <code style={{ fontSize: '0.85rem', color: '#7dd3fc', background: 'rgba(14, 165, 233, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                              <code style={{ fontSize: '0.85rem', color: '#0284c7', background: 'rgba(2, 132, 199, 0.1)', border: '1px solid rgba(2, 132, 199, 0.25)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
                                 {lic.activeMachineId}
                               </code>
                               {lic.activatedAt && (
@@ -1257,15 +1383,15 @@ export default function AdminPage() {
 
                         <td>
                           {lic.status === 'revoked' ? (
-                            <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444', color: '#f87171' }}>
+                            <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444', color: '#ef4444', fontWeight: 700 }}>
                               Revoked
                             </span>
                           ) : isBound ? (
-                            <span className="badge badge-guarantee">
+                            <span className="badge badge-guarantee" style={{ fontWeight: 700 }}>
                               Active (1 PC)
                             </span>
                           ) : (
-                            <span className="badge badge-windows">
+                            <span className="badge badge-windows" style={{ fontWeight: 700 }}>
                               Available
                             </span>
                           )}
@@ -1281,8 +1407,9 @@ export default function AdminPage() {
                                 style={{
                                   padding: '6px 12px',
                                   fontSize: '0.8rem',
-                                  borderColor: 'rgba(6, 182, 212, 0.4)',
-                                  color: '#67e8f9'
+                                  borderColor: 'rgba(2, 132, 199, 0.4)',
+                                  color: '#0284c7',
+                                  fontWeight: 600
                                 }}
                               >
                                 🔓 Release HWID
@@ -1297,8 +1424,9 @@ export default function AdminPage() {
                                 style={{
                                   padding: '6px 12px',
                                   fontSize: '0.8rem',
-                                  borderColor: 'rgba(239, 68, 68, 0.3)',
-                                  color: '#fca5a5'
+                                  borderColor: 'rgba(239, 68, 68, 0.35)',
+                                  color: '#ef4444',
+                                  fontWeight: 600
                                 }}
                               >
                                 Revoke
@@ -1343,17 +1471,11 @@ export default function AdminPage() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       placeholder="e.g. LAUNCH50"
+                      className="admin-field-input"
                       style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        background: 'rgba(10, 13, 20, 0.8)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
-                        color: 'var(--text-primary)',
                         fontFamily: 'var(--font-mono)',
                         textTransform: 'uppercase',
-                        fontWeight: 700,
-                        outline: 'none'
+                        fontWeight: 700
                       }}
                     />
                   </div>
@@ -1365,15 +1487,7 @@ export default function AdminPage() {
                     <select
                       value={couponType}
                       onChange={(e) => setCouponType(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        background: 'rgba(10, 13, 20, 0.8)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
-                        color: 'var(--text-primary)',
-                        outline: 'none'
-                      }}
+                      className="admin-field-select"
                     >
                       <option value="percentage">Percentage (%)</option>
                       <option value="fixed">Fixed Amount (₹ or $)</option>
@@ -1394,15 +1508,7 @@ export default function AdminPage() {
                       value={couponValue}
                       onChange={(e) => setCouponValue(e.target.value)}
                       placeholder="20"
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        background: 'rgba(10, 13, 20, 0.8)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
-                        color: 'var(--text-primary)',
-                        outline: 'none'
-                      }}
+                      className="admin-field-input"
                     />
                   </div>
 
@@ -1416,15 +1522,7 @@ export default function AdminPage() {
                       value={couponMaxUses}
                       onChange={(e) => setCouponMaxUses(e.target.value)}
                       placeholder="Unlimited"
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        background: 'rgba(10, 13, 20, 0.8)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
-                        color: 'var(--text-primary)',
-                        outline: 'none'
-                      }}
+                      className="admin-field-input"
                     />
                   </div>
                 </div>
@@ -1437,15 +1535,7 @@ export default function AdminPage() {
                     type="date"
                     value={couponExpires}
                     onChange={(e) => setCouponExpires(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      background: 'rgba(10, 13, 20, 0.8)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      outline: 'none'
-                    }}
+                    className="admin-field-input"
                   />
                 </div>
 
@@ -1472,9 +1562,9 @@ export default function AdminPage() {
                 </ul>
               </div>
 
-              <div style={{ padding: '16px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontWeight: 600, color: '#a5b4fc', fontSize: '0.85rem' }}>Active Coupons:</div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
+              <div style={{ padding: '16px', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontWeight: 600, color: 'var(--accent-primary)', fontSize: '0.85rem' }}>Active Coupons:</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
                   {coupons.length}
                 </div>
               </div>
@@ -1507,7 +1597,7 @@ export default function AdminPage() {
                     coupons.map((c) => (
                       <tr key={c.code}>
                         <td>
-                          <code style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, color: '#facc15', fontSize: '1rem' }}>
+                          <code className="admin-key-code" style={{ fontWeight: 800, color: 'var(--accent-primary)', fontSize: '0.95rem' }}>
                             {c.code}
                           </code>
                         </td>
@@ -1536,7 +1626,7 @@ export default function AdminPage() {
                               fontWeight: 700,
                               textTransform: 'uppercase',
                               background: c.active !== false ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                              color: c.active !== false ? '#34d399' : '#f87171'
+                              color: c.active !== false ? '#10b981' : '#ef4444'
                             }}
                           >
                             {c.active !== false ? 'Active' : 'Inactive'}
@@ -1546,7 +1636,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleDeleteCoupon(c.code)}
                             className="btn btn-secondary"
-                            style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#fca5a5' }}
+                            style={{ padding: '6px 12px', fontSize: '0.8rem', borderColor: 'rgba(239, 68, 68, 0.35)', color: '#ef4444' }}
                           >
                             Delete
                           </button>
@@ -1568,10 +1658,10 @@ export default function AdminPage() {
             <h2 className="heading-md" style={{ marginBottom: '16px' }}>Payment & Email Gateway Integration Status</h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>Cashfree Payment Gateway</span>
-                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(99, 102, 241, 0.2)', color: '#a5b4fc', fontWeight: 600 }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>Cashfree Payment Gateway</span>
+                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(99, 102, 241, 0.12)', color: 'var(--accent-primary)', fontWeight: 600 }}>
                     API v2023-08-01
                   </span>
                 </div>
@@ -1580,10 +1670,10 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ padding: '20px', borderRadius: 'var(--radius-md)', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 700, fontSize: '1rem', color: '#ffffff' }}>ZeptoMail Transactional Email</span>
-                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontWeight: 600 }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>ZeptoMail Transactional Email</span>
+                  <span style={{ fontSize: '0.8rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', fontWeight: 600 }}>
                     Zoho REST API v1.1
                   </span>
                 </div>
