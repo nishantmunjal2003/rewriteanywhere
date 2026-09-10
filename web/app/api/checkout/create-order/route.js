@@ -44,7 +44,7 @@ export async function POST(request) {
     }
 
     const cur = (currency || 'INR').toUpperCase();
-    const basePrice = cur === 'USD' ? 19 : 2000;
+    const basePrice = cur === 'USD' ? 19 : 1600;
     let finalAmount = basePrice;
     let discountAmount = 0;
     let validCoupon = null;

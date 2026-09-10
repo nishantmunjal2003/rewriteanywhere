@@ -19,7 +19,7 @@ export default function TermsPage() {
           <section>
             <h2 className="heading-md" style={{ color: 'var(--accent-primary)' }}>1. License Grant & Single-PC Policy</h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              Upon payment of the one-time license fee ($19 USD or ₹2,000 INR), AI Rewrite Anywhere grants you a non-exclusive, non-transferable, perpetual license to install and execute the desktop application on <strong>one (1) active Windows personal computer</strong> at any given time.
+              Upon payment of the one-time license fee ($19 USD or ₹1,600 INR), AI Rewrite Anywhere grants you a non-exclusive, non-transferable, perpetual license to install and execute the desktop application on <strong>one (1) active Windows personal computer</strong> at any given time.
             </p>
             <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>
               Each commercial license key (<kbd>ARW-XXXX-XXXX-XXXX-XXXX</kbd>) is hardware-bound to your PC\'s unique Hardware ID (HWID). If you purchase a new PC or replace system components, you may request a free hardware ID reset by contacting our support team with your proof of purchase. Simultaneous use on multiple active computers is strictly prohibited.

@@ -836,7 +836,7 @@ export default function AdminPage() {
                     }}
                   >
                     <option value="USD_19">$19 USD (International Lifetime)</option>
-                    <option value="INR_2000">₹2,000 INR (India Special Lifetime)</option>
+                    <option value="INR_1600">₹1,600 INR (India Special Lifetime)</option>
                   </select>
                 </div>
 
@@ -1063,7 +1063,7 @@ export default function AdminPage() {
 
                         <td>
                           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                            {lic.price || (lic.tier === 'INR_2000' ? '₹2,000 INR' : '$19 USD')}
+                            {lic.price || (lic.tier?.startsWith('INR') ? '₹1,600 INR' : '$19 USD')}
                           </span>
                         </td>
 

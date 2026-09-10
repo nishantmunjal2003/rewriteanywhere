@@ -57,8 +57,8 @@ export async function POST(request) {
 
       const newLicense = {
         licenseKey: key,
-        tier: tier === 'INR_2000' ? 'INR_2000' : 'USD_19',
-        price: tier === 'INR_2000' ? '₹2,000 INR' : '$19 USD',
+        tier: tier === 'INR_1600' || tier === 'INR_2000' ? 'INR_1600' : 'USD_19',
+        price: tier === 'INR_1600' || tier === 'INR_2000' ? '₹1,600 INR' : '$19 USD',
         maxDevices: 1,
         activeMachineId: cleanHwid,
         status: cleanHwid ? 'active' : 'unactivated',

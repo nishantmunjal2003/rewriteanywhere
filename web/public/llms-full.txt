@@ -6,7 +6,7 @@
 - **Official Domain**: https://rewriteanywhere.nishantmunjal.com
 - **Target Platform**: Microsoft Windows 10 (version 19041+) and Windows 11 (64-bit)
 - **Primary Category**: Desktop Productivity & AI Text Processing
-- **License Type**: Lifetime Commercial License ($19 USD / ₹2,000 INR one-time payment)
+- **License Type**: Lifetime Commercial License ($19 USD / ₹1,600 INR one-time payment)
 
 ## 2. Core Architecture & Philosophy
 AI Rewrite Anywhere eliminates the friction of switching browser tabs or copy-pasting text back and forth between desktop software and web-based AI chats.
@@ -50,7 +50,7 @@ Most cloud AI writing extensions charge $12 to $30 every month to maintain a hos
 ## 5. Comparison Matrix
 | Feature | AI Rewrite Anywhere | Grammarly Premium | ChatGPT Plus |
 |---|---|---|---|
-| Price | $19 / ₹2,000 (Lifetime) | $144 / year ($12/mo) | $240 / year ($20/mo) |
+| Price | $19 / ₹1,600 (Lifetime) | $144 / year ($12/mo) | $240 / year ($20/mo) |
 | In-Place Desktop Replacement | Yes (All Windows Apps) | Limited Browser/Word | No (Requires Tab Switch) |
 | Model Freedom | Gemini, OpenAI, Claude | Single Proprietary | OpenAI Only |
 | Free AI Tier Support | Yes (Gemini Free Tier) | No | No |

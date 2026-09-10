@@ -213,7 +213,7 @@ export default function HowToUsePage() {
 
         <div className="text-center" style={{ marginTop: '48px' }}>
           <a href="/#pricing" className="btn btn-primary btn-large">
-            Get Your Lifetime License Now ($19 / ₹2,000) →
+            Get Your Lifetime License Now ($19 / ₹1,600) →
           </a>
         </div>
       </div>

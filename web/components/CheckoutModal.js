@@ -24,7 +24,7 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
 
   if (!isOpen) return null;
 
-  const basePrice = currency === 'USD' ? 19 : 2000;
+  const basePrice = currency === 'USD' ? 19 : 1600;
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const finalPrice = Math.max(0, basePrice - discountAmount);
 

@@ -9,7 +9,7 @@ export const metadata = {
     template: '%s | AI Rewrite Anywhere',
   },
   description:
-    'Highlight any text in any Windows app, press Ctrl+Shift+R or click the floating assistant, and rewrite with Google Gemini, OpenAI, or Claude. Lifetime commercial license ($19 USD / ₹2,000 INR) with 14-day money-back guarantee.',
+    'Highlight any text in any Windows app, press Ctrl+Shift+R or click the floating assistant, and rewrite with Google Gemini, OpenAI, or Claude. Lifetime commercial license ($19 USD / ₹1,600 INR) with 14-day money-back guarantee.',
   keywords: [
     'AI Rewrite Anywhere',
     'Windows AI text assistant',
@@ -109,7 +109,7 @@ const jsonLdData = {
         },
         {
           '@type': 'Offer',
-          price: '2000.00',
+          price: '1600.00',
           priceCurrency: 'INR',
           priceValidUntil: '2027-12-31',
           availability: 'https://schema.org/InStock',

@@ -338,7 +338,7 @@ export default function DashboardPage() {
                     href="/#pricing"
                     className="mt-4 inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-xs font-bold text-white transition"
                   >
-                    Purchase Lifetime License (₹2,000 / $19)
+                    Purchase Lifetime License (₹1,600 / $19)
                   </Link>
                 </div>
               ) : (

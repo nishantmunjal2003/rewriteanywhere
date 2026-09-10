@@ -13,7 +13,7 @@ export async function POST(request) {
       );
     }
 
-    const originalAmount = parseFloat(amount) || (currency.toUpperCase() === 'USD' ? 19 : 2000);
+    const originalAmount = parseFloat(amount) || (currency.toUpperCase() === 'USD' ? 19 : 1600);
     const result = validateCoupon(code, originalAmount, currency);
 
     if (!result.valid) {

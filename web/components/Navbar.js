@@ -151,7 +151,7 @@ export default function Navbar() {
                 style={{ width: '100%', justifyContent: 'center', textAlign: 'center' }}
                 onClick={closeMenu}
               >
-                Get Lifetime License ($19 / ₹2,000)
+                Get Lifetime License ($19 / ₹1,600)
               </a>
             </div>
           </div>

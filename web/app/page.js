@@ -1,11 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CheckoutModal from '@/components/CheckoutModal';
 
 export default function HomePage() {
   const [currency, setCurrency] = useState('usd'); // 'usd' or 'inr'
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  useEffect(() => {
+    // 1. Instant check based on system timezone & offset (UTC+5:30 is India Standard Time)
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const offset = new Date().getTimezoneOffset(); // -330 for IST
+      if (tz.includes('Kolkata') || tz.includes('Calcutta') || offset === -330) {
+        setCurrency('inr');
+      }
+    } catch (e) {}
+
+    // 2. Network geolocation verification
+    const checkGeo = async () => {
+      try {
+        const res = await fetch('/api/geo');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.isIndia) {
+            setCurrency('inr');
+            return;
+          } else if (data?.country && data.country !== 'IN') {
+            setCurrency('usd');
+            return;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const extRes = await fetch('https://api.country.is/');
+        if (extRes.ok) {
+          const extData = await extRes.json();
+          if (extData?.country === 'IN') {
+            setCurrency('inr');
+          } else if (extData?.country && extData.country !== 'IN') {
+            setCurrency('usd');
+          }
+        }
+      } catch (e) {}
+    };
+
+    checkGeo();
+  }, []);
   const [selectedTone, setSelectedTone] = useState('Professional');
   const [sampleText, setSampleText] = useState(
     'sir tomorrow i will not able to attend office meeting because some urgent personal matter came up at home. please consider leave for me.'
@@ -143,7 +185,7 @@ export default function HomePage() {
           <div className="hero-cta-group">
             <a href="#pricing" className="btn btn-primary btn-large">
               <span>Get Lifetime License</span>
-              <strong>– {currency === 'inr' ? '₹2,000 INR' : '$19 USD'}</strong>
+              <strong>– {currency === 'inr' ? '₹1,600 INR' : '$19 USD'}</strong>
             </a>
             <a href="/how-to-use" className="btn btn-secondary btn-large">
               <span>View Free Gemini API Guide</span>
@@ -318,7 +360,7 @@ export default function HomePage() {
               <tbody>
                 <tr>
                   <td><strong>Pricing Model</strong></td>
-                  <td className="table-highlight" style={{ color: 'var(--accent-emerald)' }}>$19 / ₹2,000 (One-Time Lifetime)</td>
+                  <td className="table-highlight" style={{ color: 'var(--accent-emerald)' }}>$19 / ₹1,600 (One-Time Lifetime)</td>
                   <td>$144 / year ($12/mo recurring)</td>
                   <td>$240 / year ($20/mo recurring)</td>
                 </tr>
@@ -379,7 +421,7 @@ export default function HomePage() {
                 className={`currency-btn ${currency === 'inr' ? 'active' : ''}`}
                 onClick={() => setCurrency('inr')}
               >
-                INR (₹2,000 India Special)
+                INR (₹1,600 India Special)
               </button>
             </div>
           </div>
@@ -391,7 +433,7 @@ export default function HomePage() {
 
             <div className="price-display">
               <span className="price-amount">
-                {currency === 'inr' ? '₹2,000' : '$19'}
+                {currency === 'inr' ? '₹1,600' : '$19'}
               </span>
               <span className="price-sub">/ one-time payment</span>
             </div>
@@ -436,7 +478,7 @@ export default function HomePage() {
               style={{ width: '100%', marginBottom: '16px' }}
               onClick={() => setIsCheckoutOpen(true)}
             >
-              Get License Key ({currency === 'inr' ? '₹2,000 INR' : '$19 USD'})
+              Get License Key ({currency === 'inr' ? '₹1,600 INR' : '$19 USD'})
             </button>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>

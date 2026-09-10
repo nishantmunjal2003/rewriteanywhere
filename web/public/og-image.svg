@@ -73,7 +73,7 @@
     <!-- Pill 4 (Price) -->
     <rect x="740" y="0" width="280" height="52" rx="12" fill="#4f46e5" />
     <text x="880" y="32" fill="#ffffff" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">
-      $19 USD / ₹2,000 INR Lifetime
+      $19 USD / ₹1,600 INR Lifetime
     </text>
   </g>
 
