@@ -264,6 +264,7 @@ export default function RootLayout({ children }) {
                   <li><a href="/support" className="footer-link">Help & Contact Support</a></li>
                   <li><a href="/terms" className="footer-link">Terms of Service</a></li>
                   <li><a href="/privacy" className="footer-link">Privacy Policy</a></li>
+                  <li><a href="https://nishantmunjal.com/nmril" target="_blank" rel="noopener noreferrer" className="footer-link">NMRILLabs</a></li>
                   <li><a href="/admin" className="footer-link">Admin Licensing Portal</a></li>
                   <li><a href="mailto:support@rewriteanywhere.com" className="footer-link">support@rewriteanywhere.com</a></li>
                 </ul>
@@ -272,9 +273,10 @@ export default function RootLayout({ children }) {
 
             <div className="footer-bottom">
               <div>
-                © {new Date().getFullYear()} AI Rewrite Anywhere. All rights reserved. Exclusively for Windows 10 & 11.
+                © {new Date().getFullYear()} AI Rewrite Anywhere. Developed by <a href="https://nishantmunjal.com/nmril" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', fontWeight: 600, textDecoration: 'underline' }}>NMRILLabs</a>. All rights reserved.
               </div>
-              <div style={{ display: 'flex', gap: '20px' }}>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <a href="https://nishantmunjal.com/nmril" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>NMRILLabs</a>
                 <a href="/terms" className="footer-link">Terms</a>
                 <a href="/privacy" className="footer-link">Privacy</a>
                 <a href="/support" className="footer-link">Refunds</a>
