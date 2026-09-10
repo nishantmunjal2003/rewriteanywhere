@@ -80,7 +80,7 @@ export default function SupportPage() {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      background: 'rgba(10, 13, 20, 0.8)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       color: 'var(--text-primary)',
@@ -102,7 +102,7 @@ export default function SupportPage() {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      background: 'rgba(10, 13, 20, 0.8)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       color: 'var(--text-primary)',
@@ -125,7 +125,7 @@ export default function SupportPage() {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      background: 'rgba(10, 13, 20, 0.8)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       color: 'var(--text-primary)',
@@ -146,7 +146,7 @@ export default function SupportPage() {
                     style={{
                       width: '100%',
                       padding: '12px 16px',
-                      background: 'rgba(10, 13, 20, 0.8)',
+                      background: 'var(--bg-surface-elevated)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: 'var(--radius-md)',
                       color: 'var(--text-primary)',
@@ -174,7 +174,7 @@ export default function SupportPage() {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    background: 'rgba(10, 13, 20, 0.8)',
+                    background: 'var(--bg-surface-elevated)',
                     border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-md)',
                     color: 'var(--text-primary)',

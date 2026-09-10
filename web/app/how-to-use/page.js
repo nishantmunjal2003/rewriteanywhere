@@ -99,8 +99,8 @@ export default function HowToUsePage() {
               <li>You will see your PC\'s unique <strong>Machine Hardware ID (HWID)</strong> generated automatically.</li>
               <li>Paste your license key into the input field and click <strong>Activate License</strong>.</li>
             </ol>
-            <div style={{ background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '14px 18px', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: '#c7d2fe' }}>
-              🔒 <strong>Single Active PC Protection:</strong> Each license key binds to exactly one active PC hardware ID. If you change your computer or reinstall Windows, simply email <a href="mailto:support@rewriteanywhere.com" style={{ textDecoration: 'underline' }}>support@rewriteanywhere.com</a> and we will gladly reset your device binding.
+            <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-bright)', padding: '14px 18px', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+              🔒 <strong>Single Active PC Protection:</strong> Each license key binds to exactly one active PC hardware ID. If you change your computer or reinstall Windows, simply email <a href="mailto:support@rewriteanywhere.com" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>support@rewriteanywhere.com</a> and we will gladly reset your device binding.
             </div>
           </div>
         </div>
@@ -115,16 +115,16 @@ export default function HowToUsePage() {
             </p>
 
             {/* Provider 1: Gemini */}
-            <div style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <h4 style={{ fontSize: '1.1rem', color: '#34d399' }}>Option A: Google Gemini (Recommended – 100% Free Tier)</h4>
+            <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--accent-emerald)', fontWeight: 700 }}>Option A: Google Gemini (Recommended – 100% Free Tier)</h4>
                 <span className="badge badge-guarantee">Free Tier Available</span>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '12px' }}>
                 Google AI Studio provides a free API tier that includes up to 15 requests per minute and 1,500 requests per day at zero charge.
               </p>
               <ol style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>Google AI Studio (aistudio.google.com)</a>.</li>
+                <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'underline', fontWeight: 600 }}>Google AI Studio (aistudio.google.com)</a>.</li>
                 <li>Sign in with your Google account.</li>
                 <li>Click <strong>&quot;Create API key&quot;</strong> and choose a Google Cloud project (or let it auto-create a default one).</li>
                 <li>Copy the key (starts with <kbd>AIzaSy...</kbd>).</li>
@@ -133,16 +133,16 @@ export default function HowToUsePage() {
             </div>
 
             {/* Provider 2: OpenAI */}
-            <div id="openai-guide" style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <h4 style={{ fontSize: '1.1rem', color: '#f8fafc' }}>Option B: OpenAI (GPT-4o / GPT-4o-mini)</h4>
+            <div id="openai-guide" style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '20px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Option B: OpenAI (GPT-4o / GPT-4o-mini)</h4>
                 <span className="badge">Pay-As-You-Go</span>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '12px' }}>
                 Standard pay-per-token pricing with zero monthly recurring base charge.
               </p>
               <ol style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li>Visit <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>OpenAI Platform (platform.openai.com)</a>.</li>
+                <li>Visit <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'underline', fontWeight: 600 }}>OpenAI Platform (platform.openai.com)</a>.</li>
                 <li>Log in or create an account, then navigate to <strong>API Keys</strong>.</li>
                 <li>Click <strong>&quot;Create new secret key&quot;</strong>, name it (e.g. &quot;RewriteAnywhere&quot;), and copy the key (starts with <kbd>sk-proj-...</kbd>).</li>
                 <li>In AI Rewrite Anywhere Settings, select <strong>OpenAI</strong>, paste your key, select model (GPT-4o or GPT-4o-mini), and save.</li>
@@ -150,16 +150,16 @@ export default function HowToUsePage() {
             </div>
 
             {/* Provider 3: Claude */}
-            <div id="claude-guide" style={{ background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <h4 style={{ fontSize: '1.1rem', color: '#f8fafc' }}>Option C: Anthropic Claude (Claude 3.5 Sonnet / Haiku)</h4>
+            <div id="claude-guide" style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                <h4 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Option C: Anthropic Claude (Claude 3.5 Sonnet / Haiku)</h4>
                 <span className="badge">Pay-As-You-Go</span>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '12px' }}>
                 Ideal for articulate prose, nuanced tone rewriting, and academic writing.
               </p>
               <ol style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li>Visit <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>Anthropic Console (console.anthropic.com)</a>.</li>
+                <li>Visit <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'underline', fontWeight: 600 }}>Anthropic Console (console.anthropic.com)</a>.</li>
                 <li>Log in to your Anthropic console account.</li>
                 <li>Click <strong>&quot;Create Key&quot;</strong> and copy the token (starts with <kbd>sk-ant-...</kbd>).</li>
                 <li>In AI Rewrite Anywhere Settings, select <strong>Anthropic Claude</strong>, paste your key, choose Claude 3.5 Sonnet or Haiku, and save.</li>
@@ -177,7 +177,7 @@ export default function HowToUsePage() {
               You have two ultra-fast methods to rewrite text in real-time:
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ background: 'rgba(10, 13, 20, 0.7)', padding: '18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', padding: '18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <h4 style={{ color: 'var(--accent-primary)', marginBottom: '8px' }}>Method 1: Global Shortcut</h4>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                   1. Highlight any text with your mouse or keyboard.<br/>
@@ -185,7 +185,7 @@ export default function HowToUsePage() {
                   3. The text transforms in-place instantly!
                 </p>
               </div>
-              <div style={{ background: 'rgba(10, 13, 20, 0.7)', padding: '18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', padding: '18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
                 <h4 style={{ color: 'var(--accent-secondary)', marginBottom: '8px' }}>Method 2: Floating Assistant Button</h4>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                   1. Select text in any window.<br/>
