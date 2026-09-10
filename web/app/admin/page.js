@@ -498,13 +498,10 @@ export default function AdminPage() {
               </div>
             )}
 
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '24px' }}>
-              <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '6px' }}>
-                Authorized Administrator
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: 600, fontSize: '0.95rem' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '14px', marginBottom: '24px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
                 <span>🔒</span>
-                <span>{AUTHORIZED_EMAIL}</span>
+                <span>Authorized Administrator Access Only</span>
               </div>
             </div>
 
@@ -554,21 +551,6 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
-
-            {activeGoogleClientId && (
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('arw_google_client_id');
-                    setActiveGoogleClientId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '');
-                    setCustomClientId('');
-                  }}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  Configure a different Google Client ID
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
