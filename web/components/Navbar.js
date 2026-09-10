@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ThemeToggle from './ThemeToggle';
+import BrandIcon from './BrandIcon';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -41,7 +42,9 @@ export default function Navbar() {
     <header className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}>
       <div className="container nav-container">
         <a href="/" className="logo" aria-label="AI Rewrite Anywhere Home" onClick={closeMenu}>
-          <div className="logo-icon">⚡</div>
+          <div className="logo-icon">
+            <BrandIcon size={20} />
+          </div>
           <span className="logo-text">AI Rewrite Anywhere</span>
         </a>
 

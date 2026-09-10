@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import BrandIcon from '../../components/BrandIcon';
 
 const AUTHORIZED_EMAIL = 'nishantmunjal2003@gmail.com';
 const DEFAULT_GOOGLE_CLIENT_ID = '698709002321-lhmhulia304qiqqj55lhehk5tn70k753.apps.googleusercontent.com';
@@ -409,8 +410,8 @@ export default function AdminPage() {
         <div className="container" style={{ maxWidth: '460px' }}>
           <div className="card" style={{ padding: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', border: '1px solid var(--border-subtle)' }}>
             <div className="text-center" style={{ marginBottom: '28px' }}>
-              <div className="logo-icon" style={{ margin: '0 auto 16px', width: '52px', height: '52px', fontSize: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                ⚡
+              <div className="logo-icon" style={{ margin: '0 auto 16px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BrandIcon size={28} />
               </div>
               <h1 className="heading-md" style={{ marginBottom: '8px' }}>License Administration</h1>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>

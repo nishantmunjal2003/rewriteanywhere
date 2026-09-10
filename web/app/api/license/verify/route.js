@@ -37,7 +37,7 @@ export async function POST(request) {
     const cleanKey = licenseKey.trim().toUpperCase();
     const cleanHwid = machineId.trim().toUpperCase();
 
-    if (cleanKey === 'ARW-COMM-DEMO-2026-PASS') {
+    if (process.env.NODE_ENV === 'development' && cleanKey === 'ARW-COMM-DEMO-2026-PASS') {
       return NextResponse.json({ valid: true, message: 'Valid demo commercial license.' });
     }
 

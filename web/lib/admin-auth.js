@@ -87,6 +87,12 @@ export async function verifyGoogleIdToken(idToken) {
       return { valid: false, error: 'Google email address is not verified.' };
     }
 
+    // Verify OAuth Client ID Audience to prevent cross-app token reuse
+    if (EXPECTED_GOOGLE_CLIENT_ID && data.aud && data.aud !== EXPECTED_GOOGLE_CLIENT_ID) {
+      console.warn(`OAuth audience mismatch: expected ${EXPECTED_GOOGLE_CLIENT_ID}, received ${data.aud}`);
+      return { valid: false, error: 'Invalid Google OAuth client ID audience.' };
+    }
+
     const email = (data.email || '').toLowerCase().trim();
     if (email !== AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
       return {

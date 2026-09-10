@@ -58,8 +58,8 @@ export async function POST(request) {
     const cleanKey = licenseKey.trim().toUpperCase();
     const cleanHwid = machineId.trim().toUpperCase();
 
-    // Check offline demo key
-    if (cleanKey === 'ARW-COMM-DEMO-2026-PASS') {
+    // Check offline demo key (restricted to development environment)
+    if (process.env.NODE_ENV === 'development' && cleanKey === 'ARW-COMM-DEMO-2026-PASS') {
       const signature = crypto.createHmac('sha256', HMAC_SECRET).update(`${cleanKey}:${cleanHwid}:DEMO`).digest('hex');
       return NextResponse.json({
         success: true,

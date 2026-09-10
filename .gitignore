@@ -28,6 +28,8 @@ credentials.json
 .env
 .env*.local
 .env.local
+data/*.json
+web/data/*.json
 
 ## Logs
 *.log

@@ -1,5 +1,6 @@
 import './globals.css';
 import Navbar from '../components/Navbar';
+import BrandIcon from '../components/BrandIcon';
 
 export const metadata = {
   metadataBase: new URL('https://rewriteanywhere.nishantmunjal.com'),
@@ -211,7 +212,9 @@ export default function RootLayout({ children }) {
             <div className="footer-grid">
               <div>
                 <div className="logo" style={{ marginBottom: '16px' }}>
-                  <div className="logo-icon">⚡</div>
+                  <div className="logo-icon">
+                    <BrandIcon size={20} />
+                  </div>
                   <span>AI Rewrite Anywhere</span>
                 </div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '320px', marginBottom: '16px' }}>
