@@ -12,7 +12,7 @@ function isAuthorized(request) {
 export async function GET(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json(
-      { error: 'Unauthorized. Please sign in with Google as the authorized administrator.' },
+      { error: 'Access Denied.' },
       { status: 401 }
     );
   }
@@ -38,7 +38,7 @@ export async function GET(request) {
 export async function POST(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json(
-      { error: 'Unauthorized. Please sign in with Google as the authorized administrator.' },
+      { error: 'Access Denied.' },
       { status: 401 }
     );
   }

@@ -97,7 +97,7 @@ export async function verifyGoogleIdToken(idToken) {
     if (email !== AUTHORIZED_ADMIN_EMAIL.toLowerCase()) {
       return {
         valid: false,
-        error: `Access Denied: ${email} is not authorized. Only ${AUTHORIZED_ADMIN_EMAIL} can access this administration portal.`
+        error: 'Access Denied.'
       };
     }
 

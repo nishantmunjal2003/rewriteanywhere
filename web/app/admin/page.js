@@ -196,7 +196,7 @@ export default function AdminPage() {
         loadLicenses();
       } else {
         setIsAuthenticated(false);
-        setAuthError(data.message || 'Access denied: Account is not authorized.');
+        setAuthError(data.message || 'Access Denied.');
       }
     } catch (err) {
       setAuthError('Network error connecting to authentication server.');
@@ -485,9 +485,9 @@ export default function AdminPage() {
               <div className="logo-icon" style={{ margin: '0 auto 16px', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <BrandIcon size={28} />
               </div>
-              <h1 className="heading-md" style={{ marginBottom: '8px' }}>License Administration</h1>
+              <h1 className="heading-md" style={{ marginBottom: '8px' }}>Admin Portal</h1>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                Access is restricted to the authorized administrator.
+                Sign in to continue.
               </p>
             </div>
 
@@ -496,13 +496,6 @@ export default function AdminPage() {
                 {authError}
               </div>
             )}
-
-            <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '14px', marginBottom: '24px', textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-                <span>🔒</span>
-                <span>Authorized Administrator Access Only</span>
-              </div>
-            </div>
 
             {/* Google Sign-In Button Container */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%' }}>
