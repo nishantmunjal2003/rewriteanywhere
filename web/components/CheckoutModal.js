@@ -160,7 +160,7 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
 
           <div className="modal-header">
             <div className="modal-header-icon">
-              <BrandIcon size={24} color="#ffffff" />
+              <BrandIcon size={44} />
             </div>
             <div>
               <h3 className="modal-title">Lifetime Commercial License</h3>

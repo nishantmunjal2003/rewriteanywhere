@@ -36,9 +36,13 @@ export const metadata = {
     canonical: 'https://rewriteanywhere.nishantmunjal.com',
   },
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/app_icon.png', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/app_icon.png',
   },
   openGraph: {
     title: 'AI Rewrite Anywhere | Universal Windows AI Text Assistant',
@@ -213,7 +217,7 @@ export default function RootLayout({ children }) {
               <div>
                 <div className="logo" style={{ marginBottom: '16px' }}>
                   <div className="logo-icon">
-                    <BrandIcon size={20} />
+                    <BrandIcon size={38} />
                   </div>
                   <span>AI Rewrite Anywhere</span>
                 </div>

@@ -43,7 +43,7 @@ export default function Navbar() {
       <div className="container nav-container">
         <a href="/" className="logo" aria-label="AI Rewrite Anywhere Home" onClick={closeMenu}>
           <div className="logo-icon">
-            <BrandIcon size={20} />
+            <BrandIcon size={38} />
           </div>
           <span className="logo-text">AI Rewrite Anywhere</span>
         </a>

@@ -189,18 +189,27 @@ kbd {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: var(--gradient-brand);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
   flex-shrink: 0;
+  overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
 .logo:hover .logo-icon {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.6);
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.55);
 }
 
 .desktop-nav {
@@ -1224,12 +1233,21 @@ kbd {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: var(--gradient-brand);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+.modal-header-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
 }
 
 .modal-title {
