@@ -280,14 +280,7 @@ export default function DashboardPage() {
                 style={{ padding: '12px 24px' }}
               >
                 <span>⬇️ Download Installer (.exe)</span>
-                <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>(3.1 MB)</span>
-              </a>
-              <a
-                href={userData.downloads?.zipUrl || 'https://rewriteanywhere.nishantmunjal.com/downloads/installer.zip'}
-                className="btn btn-secondary"
-                style={{ padding: '12px 18px', fontSize: '0.88rem' }}
-              >
-                <span>📦 Portable ZIP</span>
+                <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>({userData.downloads?.fileSize || '3.1 MB'})</span>
               </a>
             </div>
           </div>

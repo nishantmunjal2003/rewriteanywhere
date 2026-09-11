@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
 import { validateCoupon } from '@/lib/coupon-manager';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 export async function POST(request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateLimit = checkRateLimit(`coupon_val_${clientIp}`, 15, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: 'Too many coupon validation requests. Please wait a minute.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter || 60) } }
+      );
+    }
+
     const body = await request.json();
     const { code, amount, currency = 'INR' } = body || {};
 

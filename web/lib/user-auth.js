@@ -93,26 +93,40 @@ export function verifyCustomerSessionToken(token) {
 }
 
 /**
- * Generates a 6-digit numeric OTP for an email and saves it with a 10-minute expiry
+ * Generates a 6-digit numeric OTP for an email using CSPRNG and saves SHA-256 hash
  */
 export function generateAndSaveOtp(email) {
   const cleanEmail = email.toLowerCase().trim();
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
   const otps = readOtps();
+  const existing = otps[cleanEmail];
+
+  // Cooldown protection: limit 1 request per 60 seconds per email
+  if (existing && existing.createdAt && (Date.now() - existing.createdAt < 60 * 1000)) {
+    const waitSeconds = Math.ceil((60 * 1000 - (Date.now() - existing.createdAt)) / 1000);
+    return {
+      success: false,
+      cooldown: true,
+      message: `Please wait ${waitSeconds} seconds before requesting another verification code.`
+    };
+  }
+
+  // Cryptographically secure 6-digit number
+  const otpCode = crypto.randomInt(100000, 1000000).toString();
+  const codeHash = crypto.createHash('sha256').update(otpCode).digest('hex');
+
   otps[cleanEmail] = {
-    code: otpCode,
+    codeHash,
     expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
     attempts: 0,
     createdAt: Date.now()
   };
 
   saveOtps(otps);
-  return otpCode;
+  return { success: true, code: otpCode };
 }
 
 /**
- * Verifies and consumes an OTP code for an email
+ * Verifies and consumes an OTP code for an email by comparing SHA-256 hash
  */
 export function verifyAndConsumeOtp(email, enteredCode) {
   if (!email || !enteredCode) {
@@ -121,6 +135,7 @@ export function verifyAndConsumeOtp(email, enteredCode) {
 
   const cleanEmail = email.toLowerCase().trim();
   const cleanCode = enteredCode.toString().trim();
+  const enteredHash = crypto.createHash('sha256').update(cleanCode).digest('hex');
 
   const otps = readOtps();
   const record = otps[cleanEmail];
@@ -142,7 +157,12 @@ export function verifyAndConsumeOtp(email, enteredCode) {
     return { valid: false, message: 'Too many incorrect attempts. Please request a new code.' };
   }
 
-  if (record.code !== cleanCode) {
+  // Compare hash (or legacy plaintext if present)
+  const isMatch = record.codeHash
+    ? record.codeHash === enteredHash
+    : record.code === cleanCode;
+
+  if (!isMatch) {
     saveOtps(otps);
     return { valid: false, message: 'Invalid verification code. Please check your email.' };
   }

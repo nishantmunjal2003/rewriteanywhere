@@ -131,8 +131,8 @@ export async function sendLicenseEmail({ toEmail, customerName, licenseKey, orde
       <a href="https://rewriteanywhere.nishantmunjal.com/downloads/AI-Rewrite-Anywhere-Setup.exe" class="btn">
         ⬇️ Download Windows Installer (.exe)
       </a>
-      <div style="font-size: 13px; color: #94a3b8;">
-        Portable ZIP format also available: <a href="https://rewriteanywhere.nishantmunjal.com/downloads/installer.zip" style="color: #38bdf8;">Download ZIP</a>
+      <div style="font-size: 13px; color: #94a3b8; margin-top: 6px;">
+        Compatible with Windows 10 & 11 (64-bit)
       </div>
     </div>
 
@@ -168,6 +168,147 @@ export async function sendLicenseEmail({ toEmail, customerName, licenseKey, orde
     subject,
     htmlBody
   });
+}
+
+/**
+ * Dispatches an instant notification email to Admin(s) whenever a new purchase or license activation occurs
+ */
+export async function sendAdminPurchaseAlert({
+  orderId,
+  customerEmail,
+  customerName = 'Customer',
+  customerPhone = 'N/A',
+  licenseKey,
+  amount,
+  currency = 'INR',
+  couponCode = null,
+  isFree = false,
+  paymentGateway = 'CASHFREE'
+}) {
+  const adminEmailsEnv = process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || 'nishantmunjal2003@gmail.com';
+  const adminEmails = adminEmailsEnv
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (adminEmails.length === 0) {
+    adminEmails.push('nishantmunjal2003@gmail.com');
+  }
+
+  const isFreeOrder = isFree || amount === 0;
+  const priceDisplay = isFreeOrder
+    ? (couponCode ? `100% OFF Free (Coupon: ${couponCode})` : 'Free License')
+    : `${currency === 'USD' ? '$' : '₹'}${amount} ${currency}`;
+
+  const subject = isFreeOrder
+    ? `🎟️ [Free License Claimed] ${customerName} (${customerEmail}) - Coupon ${couponCode || 'PROMO'}`
+    : `💰 [New Purchase Alert] ${currency === 'USD' ? '$' : '₹'}${amount} from ${customerName} (${customerEmail})`;
+
+  const dateStr = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 36px; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .badge-paid { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+    .badge-coupon { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid #a855f7; }
+    .key-box { background: #1e1b4b; border: 2px dashed #818cf8; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0; }
+    .key { font-family: monospace; font-size: 20px; font-weight: 800; color: #facc15; letter-spacing: 2px; }
+    .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #162035; border-radius: 10px; overflow: hidden; }
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid #1f2937; font-size: 14px; color: #cbd5e1; }
+    .data-table td.label { font-weight: 600; color: #94a3b8; width: 35%; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; margin-top: 16px; }
+    .footer { text-align: center; margin-top: 28px; font-size: 12px; color: #64748b; border-top: 1px solid #1f2937; padding-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="https://rewriteanywhere.nishantmunjal.com/app_icon.png" width="52" height="52" alt="AI Rewrite Anywhere" style="border-radius: 14px; display: inline-block; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); vertical-align: middle;" />
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span class="badge ${isFreeOrder ? 'badge-coupon' : 'badge-paid'}">
+          ${isFreeOrder ? '🎟️ Free Coupon License' : '💰 New Paid Purchase'}
+        </span>
+      </div>
+      <h2 style="color: #ffffff; margin: 0 0 6px 0;">New Order Notification</h2>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0;">A new license has been minted and delivered to customer.</p>
+    </div>
+
+    <div class="key-box">
+      <div style="font-size: 12px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 6px;">Minted Commercial License Key</div>
+      <div class="key">${licenseKey}</div>
+    </div>
+
+    <table class="data-table">
+      <tr>
+        <td class="label">Customer Name</td>
+        <td><strong>${customerName}</strong></td>
+      </tr>
+      <tr>
+        <td class="label">Email Address</td>
+        <td><a href="mailto:${customerEmail}" style="color: #38bdf8;">${customerEmail}</a></td>
+      </tr>
+      <tr>
+        <td class="label">Phone</td>
+        <td>${customerPhone || 'N/A'}</td>
+      </tr>
+      <tr>
+        <td class="label">Amount / Tier</td>
+        <td><strong>${priceDisplay}</strong></td>
+      </tr>
+      ${couponCode ? `<tr><td class="label">Coupon Code</td><td><strong style="color: #c084fc;">${couponCode}</strong></td></tr>` : ''}
+      <tr>
+        <td class="label">Order Reference</td>
+        <td><code style="font-family: monospace; color: #a5b4fc;">${orderId}</code></td>
+      </tr>
+      <tr>
+        <td class="label">Payment Mode</td>
+        <td>${paymentGateway}</td>
+      </tr>
+      <tr>
+        <td class="label">Order Time</td>
+        <td>${dateStr} (IST)</td>
+      </tr>
+    </table>
+
+    <div style="text-align: center; margin-top: 24px;">
+      <a href="https://rewriteanywhere.nishantmunjal.com/admin" class="btn">
+        🔐 Open Admin Portal
+      </a>
+    </div>
+
+    <div class="footer">
+      AI Rewrite Anywhere Admin Notification System • <a href="https://rewriteanywhere.nishantmunjal.com" style="color: #818cf8;">rewriteanywhere.nishantmunjal.com</a>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const results = [];
+  for (const adminEmail of adminEmails) {
+    try {
+      const res = await sendEmail({
+        toEmail: adminEmail,
+        toName: 'Admin',
+        subject,
+        htmlBody
+      });
+      results.push(res);
+    } catch (err) {
+      console.error(`Failed to send admin purchase alert to ${adminEmail}:`, err);
+    }
+  }
+
+  return { success: true, count: results.length };
 }
 
 /**
@@ -213,6 +354,97 @@ export async function sendOtpEmail({ toEmail, otpCode }) {
 
   return sendEmail({
     toEmail,
+    subject,
+    htmlBody
+  });
+}
+
+/**
+ * Dispatches New Software Version Release email to licensed customers
+ */
+export async function sendReleaseUpdateEmail({
+  toEmail,
+  customerName = 'Valued Customer',
+  version,
+  notes = '',
+  downloadUrl = 'https://rewriteanywhere.nishantmunjal.com/downloads/AI-Rewrite-Anywhere-Setup.exe'
+}) {
+  const subject = `🚀 New Update Released: AI Rewrite Anywhere ${version}`;
+
+  const formattedNotes = notes
+    ? notes
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => `<li>${line.startsWith('-') ? line.substring(1).trim() : line}</li>`)
+        .join('')
+    : '<li>Performance improvements, stability enhancements, and bug fixes.</li>';
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0b0f19; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 36px; }
+    .header { text-align: center; margin-bottom: 26px; }
+    .brand { font-size: 20px; font-weight: bold; color: #6366f1; }
+    .version-badge { display: inline-block; background: rgba(99, 102, 241, 0.15); border: 1px solid #6366f1; color: #a5b4fc; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 13px; margin: 12px 0; }
+    .btn { display: inline-block; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 16px; margin: 20px 0; }
+    .changelog-box { background: #162035; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: left; }
+    .changelog-box ul { margin: 0; padding-left: 20px; color: #cbd5e1; line-height: 1.8; }
+    .instructions { background: #0f172a; border-radius: 10px; padding: 16px; margin: 20px 0; font-size: 13px; color: #94a3b8; line-height: 1.6; }
+    .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #64748b; border-top: 1px solid #1f2937; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="https://rewriteanywhere.nishantmunjal.com/app_icon.png" width="56" height="56" alt="AI Rewrite Anywhere" style="border-radius: 14px; display: inline-block; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35); vertical-align: middle;" />
+      </div>
+      <div class="brand">AI Rewrite Anywhere</div>
+      <div class="version-badge">✨ NEW RELEASE • ${version}</div>
+      <h2 style="color: #ffffff; margin-top: 8px;">A brand new update is available!</h2>
+      <p style="color: #94a3b8; font-size: 15px; margin-top: 4px;">
+        Hello ${customerName}, as a valued lifetime license holder, your free update is ready for immediate download.
+      </p>
+    </div>
+
+    <div class="changelog-box">
+      <h3 style="color: #ffffff; margin-top: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px;">What's New in ${version}:</h3>
+      <ul>
+        ${formattedNotes}
+      </ul>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="${downloadUrl}" class="btn">
+        ⬇️ Download Installer (.exe) - ${version}
+      </a>
+      <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+        Standalone Native Windows Installer • Windows 10 & 11 (64-bit)
+      </div>
+    </div>
+
+    <div class="instructions">
+      <strong style="color: #f8fafc;">How to Upgrade:</strong><br/>
+      Simply download and run the installer. It will automatically upgrade your existing installation in place. <strong>Your license key and settings will be preserved automatically.</strong>
+    </div>
+
+    <div class="footer">
+      You are receiving this update announcement because you purchased an AI Rewrite Anywhere commercial license.<br/>
+      Dashboard: <a href="https://rewriteanywhere.nishantmunjal.com/dashboard" style="color: #38bdf8;">rewriteanywhere.nishantmunjal.com/dashboard</a> • Support: <a href="mailto:support@rewriteanywhere.com" style="color: #818cf8;">support@rewriteanywhere.com</a>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  return sendEmail({
+    toEmail,
+    toName: customerName,
     subject,
     htmlBody
   });

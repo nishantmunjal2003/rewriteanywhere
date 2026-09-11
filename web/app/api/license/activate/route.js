@@ -1,25 +1,36 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { readLicenses, saveLicenses } from '@/lib/license-manager';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 const KEY_REGEX = /^ARW-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/i;
+const HWID_REGEX = /^[A-Za-z0-9_:-]{8,128}$/;
 const HMAC_SECRET = process.env.LICENSE_HMAC_SECRET || 'arw-hmac-secret-token-key-2026';
 
 export async function POST(request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`lic_act_${clientIp}`, { limit: 15, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, message: 'Too many activation attempts. Please wait a minute.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { licenseKey, machineId } = body || {};
 
-    if (!licenseKey || !KEY_REGEX.test(licenseKey.trim())) {
+    if (!licenseKey || typeof licenseKey !== 'string' || !KEY_REGEX.test(licenseKey.trim())) {
       return NextResponse.json(
         { success: false, message: 'Invalid license key format. Expected ARW-XXXX-XXXX-XXXX-XXXX.' },
         { status: 400 }
       );
     }
 
-    if (!machineId) {
+    if (!machineId || typeof machineId !== 'string' || !HWID_REGEX.test(machineId.trim())) {
       return NextResponse.json(
-        { success: false, message: 'Missing hardware identifier (machineId).' },
+        { success: false, message: 'Invalid machine identifier format (8-128 alphanumeric characters).' },
         { status: 400 }
       );
     }

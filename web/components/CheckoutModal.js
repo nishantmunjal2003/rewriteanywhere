@@ -94,9 +94,15 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
         throw new Error(orderData.message || 'Failed to initialize payment order');
       }
 
-      // If mock simulation mode
-      if (orderData.isMock || !window.Cashfree) {
-        // Direct auto-verify in test/simulation mode
+      // If free license (100% discount coupon)
+      if (orderData.isFree || orderData.orderAmount === 0) {
+        onClose();
+        router.push(`/checkout/success?order_id=${orderData.orderId}`);
+        return;
+      }
+
+      // If mock simulation mode (only when explicitly mock)
+      if (orderData.isMock) {
         const verifyRes = await fetch('/api/checkout/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -110,15 +116,36 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
         }
       }
 
-      // Initialize Cashfree Drop / Checkout
-      if (window.Cashfree && orderData.paymentSessionId) {
-        const cashfree = window.Cashfree({
-          mode: 'production' // or sandbox
-        });
-        cashfree.checkout({
-          paymentSessionId: orderData.paymentSessionId,
-          redirectTarget: '_self'
-        });
+      // Initialize Cashfree Production Checkout
+      if (orderData.paymentSessionId) {
+        const launchCheckout = () => {
+          if (typeof window !== 'undefined' && window.Cashfree) {
+            const cashfree = window.Cashfree({
+              mode: 'production'
+            });
+            cashfree.checkout({
+              paymentSessionId: orderData.paymentSessionId,
+              redirectTarget: '_self'
+            });
+            return true;
+          }
+          return false;
+        };
+
+        if (!launchCheckout()) {
+          // If SDK hasn't finished loading yet, dynamically wait for it
+          let attempts = 0;
+          const interval = setInterval(() => {
+            attempts++;
+            if (launchCheckout() || attempts > 20) {
+              clearInterval(interval);
+              if (attempts > 20) {
+                setError('Payment gateway SDK loading timed out. Please refresh and try again.');
+                setSubmitting(false);
+              }
+            }
+          }, 200);
+        }
       } else {
         // Fallback redirection to success page
         onClose();
@@ -135,7 +162,7 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
     <>
       <Script
         src="https://sdk.cashfree.com/js/v3/cashfree.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
         onLoad={() => setCfLoaded(true)}
       />
 
@@ -315,11 +342,15 @@ export default function CheckoutModal({ isOpen, onClose, initialCurrency = 'INR'
                     <circle opacity="0.25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path opacity="0.75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  <span>Securing Payment...</span>
+                  <span>{finalPrice === 0 ? 'Activating License...' : 'Securing Payment...'}</span>
                 </>
               ) : (
                 <>
-                  <span>Pay {currency === 'USD' ? `$${finalPrice}` : `₹${finalPrice.toLocaleString('en-IN')}`}</span>
+                  <span>
+                    {finalPrice === 0
+                      ? 'Claim Free License'
+                      : `Pay ${currency === 'USD' ? `$${finalPrice}` : `₹${finalPrice.toLocaleString('en-IN')}`}`}
+                  </span>
                   <span>→</span>
                 </>
               )}

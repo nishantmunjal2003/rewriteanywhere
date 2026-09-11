@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
 import { verifyAndConsumeOtp, createCustomerSessionToken } from '@/lib/user-auth';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 export async function POST(request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`otp_verify_${clientIp}`, { limit: 10, windowMs: 5 * 60 * 1000 });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { success: false, message: 'Too many verification attempts. Please wait a few minutes.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { email, otp } = body || {};
 
@@ -32,7 +42,7 @@ export async function POST(request) {
     response.cookies.set('arw_user_session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 30 * 24 * 60 * 60 // 30 days
     });

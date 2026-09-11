@@ -265,7 +265,6 @@ export default function RootLayout({ children }) {
                   <li><a href="/terms" className="footer-link">Terms of Service</a></li>
                   <li><a href="/privacy" className="footer-link">Privacy Policy</a></li>
                   <li><a href="https://nishantmunjal.com/nmril" target="_blank" rel="noopener noreferrer" className="footer-link">NMRILLabs</a></li>
-                  <li><a href="/admin" className="footer-link">Admin Licensing Portal</a></li>
                   <li><a href="mailto:support@rewriteanywhere.com" className="footer-link">support@rewriteanywhere.com</a></li>
                 </ul>
               </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readCoupons, saveCoupons } from '@/lib/coupon-manager';
+import { readLicenses } from '@/lib/license-manager';
 import { getAdminSessionFromRequest } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,40 @@ export async function GET(request) {
   }
 
   const coupons = readCoupons();
+
+  // Cross-reference licenses to ensure any coupon-redeemed licenses are present in usage history
+  try {
+    const licenses = readLicenses();
+    for (const coupon of coupons) {
+      if (!Array.isArray(coupon.usageHistory)) {
+        coupon.usageHistory = [];
+      }
+      for (const lic of licenses) {
+        if (lic.couponCode && lic.couponCode.toUpperCase() === coupon.code.toUpperCase()) {
+          const alreadyExists = coupon.usageHistory.some(
+            (h) => (h.licenseKey && h.licenseKey === lic.licenseKey) || (h.orderId && h.orderId === lic.orderId)
+          );
+          if (!alreadyExists) {
+            coupon.usageHistory.push({
+              orderId: lic.orderId || null,
+              email: lic.assignedEmail || lic.email || null,
+              customerName: lic.customerName || 'Customer',
+              usedAt: lic.createdAt || new Date().toISOString(),
+              discountAmount: lic.discountApplied || null,
+              finalAmount: lic.finalAmount ?? 0,
+              currency: lic.currency || 'INR',
+              licenseKey: lic.licenseKey
+            });
+          }
+        }
+      }
+      // Ensure usedCount is at least the length of usageHistory
+      coupon.usedCount = Math.max(coupon.usedCount || 0, coupon.usageHistory.length);
+    }
+  } catch (err) {
+    console.error('Error cross-referencing coupon redemptions:', err);
+  }
+
   return NextResponse.json({ success: true, coupons });
 }
 
@@ -58,6 +93,7 @@ export async function POST(request) {
       discountValue: parseFloat(discountValue),
       maxUses: maxUses ? parseInt(maxUses, 10) : null,
       usedCount: existingIndex >= 0 ? coupons[existingIndex].usedCount || 0 : 0,
+      usageHistory: existingIndex >= 0 ? (coupons[existingIndex].usageHistory || []) : [],
       expiresAt: expiresAt || null,
       active: active !== false,
       updatedAt: new Date().toISOString()

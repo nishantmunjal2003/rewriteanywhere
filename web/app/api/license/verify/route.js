@@ -1,17 +1,28 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { readLicenses } from '@/lib/license-manager';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 const HMAC_SECRET = process.env.LICENSE_HMAC_SECRET || 'arw-hmac-secret-token-key-2026';
+const HWID_REGEX = /^[A-Za-z0-9_:-]{8,128}$/;
 
 export async function POST(request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`lic_ver_${clientIp}`, { limit: 60, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { valid: false, message: 'Too many verification requests. Please slow down.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { licenseKey, machineId } = body || {};
 
-    if (!licenseKey || !machineId) {
+    if (!licenseKey || !machineId || typeof machineId !== 'string' || !HWID_REGEX.test(machineId.trim())) {
       return NextResponse.json(
-        { valid: false, message: 'Both licenseKey and machineId are required.' },
+        { valid: false, message: 'Valid licenseKey and hardware machineId (8-128 chars) are required.' },
         { status: 400 }
       );
     }

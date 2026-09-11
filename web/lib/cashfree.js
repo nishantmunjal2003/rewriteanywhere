@@ -2,10 +2,13 @@
 
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || '';
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || '';
-const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
+const CASHFREE_ENV = (
+  process.env.CASHFREE_ENV ||
+  (CASHFREE_SECRET_KEY.startsWith('cfsk_ma_prod_') ? 'production' : 'sandbox')
+).toLowerCase();
 
 const BASE_URL =
-  CASHFREE_ENV === 'production'
+  CASHFREE_ENV === 'production' || CASHFREE_SECRET_KEY.startsWith('cfsk_ma_prod_')
     ? 'https://api.cashfree.com/pg'
     : 'https://sandbox.cashfree.com/pg';
 

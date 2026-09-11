@@ -3,7 +3,7 @@ import { fetchCashfreeOrder } from '@/lib/cashfree';
 import { generateLicenseKey, readLicenses, saveLicenses } from '@/lib/license-manager';
 import { readOrders, saveOrders } from '@/lib/order-manager';
 import { recordCouponUsage } from '@/lib/coupon-manager';
-import { sendLicenseEmail } from '@/lib/zeptomail';
+import { sendLicenseEmail, sendAdminPurchaseAlert } from '@/lib/zeptomail';
 
 export async function POST(request) {
   try {
@@ -46,20 +46,24 @@ export async function POST(request) {
     let paymentSuccess = false;
     let cfDetails = null;
 
-    if (order.isMock) {
+    if (order.isFree || order.finalAmount === 0 || order.paymentGateway?.startsWith('COUPON_')) {
+      paymentSuccess = true;
+    } else if (order.isMock) {
       // Mock simulation mode when API keys are unset
       paymentSuccess = true;
     } else {
       cfDetails = await fetchCashfreeOrder(orderId);
-      paymentSuccess = cfDetails && (cfDetails.orderStatus === 'PAID' || cfDetails.orderStatus === 'SUCCESS');
+      const rawStatus = (cfDetails?.order_status || cfDetails?.orderStatus || '').toUpperCase();
+      paymentSuccess = rawStatus === 'PAID' || rawStatus === 'SUCCESS';
     }
 
     if (!paymentSuccess) {
+      const displayStatus = cfDetails?.order_status || cfDetails?.orderStatus || 'PENDING';
       return NextResponse.json(
         {
           success: false,
-          message: 'Payment has not been completed or was not approved by Cashfree.',
-          orderStatus: cfDetails ? cfDetails.orderStatus : 'PENDING'
+          message: `Payment has not been completed or was not approved by Cashfree (Status: ${displayStatus}).`,
+          orderStatus: displayStatus
         },
         { status: 400 }
       );
@@ -70,7 +74,12 @@ export async function POST(request) {
     const licenses = readLicenses();
 
     const tier = order.currency === 'USD' ? 'USD_19' : 'INR_1600';
-    const price = order.currency === 'USD' ? '$19 USD' : '₹1,600 INR';
+    let priceDisplay = order.currency === 'USD' ? '$19 USD' : '₹1,600 INR';
+    if (order.couponCode) {
+      priceDisplay = order.finalAmount === 0
+        ? `Coupon: ${order.couponCode} (Free)`
+        : `Coupon: ${order.couponCode} (${order.currency === 'USD' ? '$' : '₹'}${order.finalAmount})`;
+    }
 
     const newLicense = {
       id: `lic_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -80,15 +89,17 @@ export async function POST(request) {
       customerName: order.customerName,
       orderId: order.orderId,
       tier,
-      price,
+      price: priceDisplay,
       currency: order.currency,
       discountApplied: order.discountAmount || 0,
+      finalAmount: order.finalAmount,
+      isFree: Boolean(order.isFree || order.finalAmount === 0),
       couponCode: order.couponCode || null,
       status: 'unactivated',
       activeMachineId: null,
       createdAt: new Date().toISOString(),
       activatedAt: null,
-      paymentGateway: order.isMock ? 'CASHFREE_SIMULATED' : 'CASHFREE',
+      paymentGateway: order.isFree ? (order.couponCode ? `COUPON_${order.couponCode}` : 'FREE_PROMO') : (order.isMock ? 'CASHFREE_SIMULATED' : 'CASHFREE'),
       releaseHistory: []
     };
 
@@ -103,10 +114,18 @@ export async function POST(request) {
 
     // Record coupon usage if applicable
     if (order.couponCode) {
-      recordCouponUsage(order.couponCode);
+      recordCouponUsage(order.couponCode, {
+        orderId: order.orderId,
+        email: order.customerEmail,
+        customerName: order.customerName,
+        discountAmount: order.discountAmount || 0,
+        finalAmount: order.finalAmount,
+        currency: order.currency,
+        licenseKey
+      });
     }
 
-    // Dispatch ZeptoMail license email
+    // Dispatch ZeptoMail license email to customer
     try {
       await sendLicenseEmail({
         toEmail: order.customerEmail,
@@ -118,6 +137,24 @@ export async function POST(request) {
       });
     } catch (mailErr) {
       console.error('Failed to send license email via ZeptoMail:', mailErr);
+    }
+
+    // Dispatch ZeptoMail purchase alert to Admin
+    try {
+      await sendAdminPurchaseAlert({
+        orderId: order.orderId,
+        customerEmail: order.customerEmail,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        licenseKey,
+        amount: order.finalAmount,
+        currency: order.currency,
+        couponCode: order.couponCode,
+        isFree: Boolean(order.isFree || order.finalAmount === 0),
+        paymentGateway: order.paymentGateway || (order.isMock ? 'CASHFREE_SIMULATED' : 'CASHFREE')
+      });
+    } catch (adminMailErr) {
+      console.error('Failed to send admin purchase alert via ZeptoMail:', adminMailErr);
     }
 
     return NextResponse.json({

@@ -109,8 +109,12 @@ function SuccessContent() {
           {/* Header */}
           <div className="success-header">
             <div className="success-icon-badge">✓</div>
-            <span className="success-status-tag">Payment Confirmed</span>
-            <h1 className="success-title">Thank you for your purchase!</h1>
+            <span className="success-status-tag">
+              {details.amount === 0 || details.isFree ? 'License Activated' : 'Payment Confirmed'}
+            </span>
+            <h1 className="success-title">
+              {details.amount === 0 || details.isFree ? 'Your Free Commercial License is Ready!' : 'Thank you for your purchase!'}
+            </h1>
             <p className="success-subtitle">
               Your lifetime commercial license has been activated and sent to{' '}
               <strong style={{ color: 'var(--text-primary)' }}>{details.email}</strong>.
@@ -141,17 +145,11 @@ function SuccessContent() {
             </p>
             <div className="success-download-buttons">
               <a
-                href="https://rewriteanywhere.nishantmunjal.com/downloads/AI-Rewrite-Anywhere-Setup.exe"
+                href={details?.downloadUrl || 'https://rewriteanywhere.nishantmunjal.com/downloads/AI-Rewrite-Anywhere-Setup.exe'}
                 className="btn btn-primary btn-large"
               >
                 <span>⬇️ Download Windows Installer (.exe)</span>
                 <span style={{ fontSize: '0.8rem', opacity: 0.9, fontWeight: 400 }}>(3.1 MB)</span>
-              </a>
-              <a
-                href="https://rewriteanywhere.nishantmunjal.com/downloads/installer.zip"
-                className="btn btn-secondary btn-large"
-              >
-                <span>📦 Portable ZIP (.zip)</span>
               </a>
             </div>
           </div>

@@ -1,21 +1,71 @@
 import fs from 'fs';
 import path from 'path';
 
+export const SEED_COUPONS = [
+  {
+    code: 'L100',
+    discountType: 'percentage',
+    discountValue: 100,
+    maxUses: null,
+    usedCount: 0,
+    active: true,
+    createdAt: '2026-09-11T00:00:00.000Z',
+    usageHistory: []
+  },
+  {
+    code: 'LAUNCH50',
+    discountType: 'percentage',
+    discountValue: 50,
+    maxUses: 100,
+    usedCount: 0,
+    active: true,
+    createdAt: '2026-09-10T00:00:00.000Z',
+    usageHistory: []
+  }
+];
+
 function getCouponsPath() {
   return path.join(process.cwd(), 'data', 'coupons.json');
 }
 
 export function readCoupons() {
+  let diskCoupons = [];
   try {
     const filePath = getCouponsPath();
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(data);
+      diskCoupons = JSON.parse(data);
     }
   } catch (err) {
     console.error('Error reading coupons.json:', err);
   }
-  return [];
+
+  const map = new Map();
+  for (const c of diskCoupons) {
+    if (c && c.code) {
+      if (!Array.isArray(c.usageHistory)) {
+        c.usageHistory = [];
+      }
+      map.set(c.code.toUpperCase(), c);
+    }
+  }
+
+  // Merge seed coupons if missing
+  let changed = false;
+  for (const seed of SEED_COUPONS) {
+    const key = seed.code.toUpperCase();
+    if (!map.has(key)) {
+      map.set(key, { ...seed, usageHistory: [] });
+      changed = true;
+    }
+  }
+
+  const merged = Array.from(map.values());
+  if (changed || diskCoupons.length === 0) {
+    saveCoupons(merged);
+  }
+
+  return merged;
 }
 
 export function saveCoupons(coupons) {
@@ -86,15 +136,41 @@ export function validateCoupon(code, originalAmount, currency = 'inr') {
 }
 
 /**
- * Increments usage count of a coupon after successful purchase
+ * Increments usage count of a coupon and records detailed redemption history
  */
-export function recordCouponUsage(code) {
+export function recordCouponUsage(code, details = {}) {
   if (!code) return false;
   const cleanCode = code.trim().toUpperCase();
   const coupons = readCoupons();
   const coupon = coupons.find((c) => c.code.toUpperCase() === cleanCode);
   if (coupon) {
-    coupon.usedCount = (coupon.usedCount || 0) + 1;
+    if (!Array.isArray(coupon.usageHistory)) {
+      coupon.usageHistory = [];
+    }
+
+    const orderId = details.orderId || null;
+    const existingIndex = orderId
+      ? coupon.usageHistory.findIndex((h) => h.orderId === orderId)
+      : -1;
+
+    const record = {
+      orderId,
+      email: details.email ? details.email.toLowerCase().trim() : (details.customerEmail || null),
+      customerName: details.customerName || details.name || 'Customer',
+      usedAt: details.usedAt || new Date().toISOString(),
+      discountAmount: details.discountAmount ?? null,
+      finalAmount: details.finalAmount ?? 0,
+      currency: details.currency || 'INR',
+      licenseKey: details.licenseKey || null
+    };
+
+    if (existingIndex >= 0) {
+      coupon.usageHistory[existingIndex] = { ...coupon.usageHistory[existingIndex], ...record };
+    } else {
+      coupon.usageHistory.unshift(record);
+      coupon.usedCount = (coupon.usedCount || 0) + 1;
+    }
+
     saveCoupons(coupons);
     return true;
   }

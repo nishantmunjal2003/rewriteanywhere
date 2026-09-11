@@ -133,16 +133,19 @@ export async function verifyGoogleIdToken(idToken) {
  * Extracts and verifies admin session from a Next.js Request (cookie or header)
  */
 export function getAdminSessionFromRequest(request) {
-  // 1. Check HttpOnly cookie
-  const cookieHeader = request.headers.get('cookie') || '';
-  const cookies = Object.fromEntries(
-    cookieHeader
-      .split(';')
-      .map((c) => c.trim().split('='))
-      .filter(([k]) => Boolean(k))
-  );
+  // 1. Check HttpOnly cookie via Next.js RequestCookies
+  let cookieToken = null;
+  if (request.cookies && typeof request.cookies.get === 'function') {
+    cookieToken = request.cookies.get('arw_admin_session')?.value;
+  }
+  if (!cookieToken) {
+    const cookieHeader = request.headers.get('cookie') || '';
+    const match = cookieHeader.match(/(?:^|;\s*)arw_admin_session=([^;]+)/);
+    if (match) {
+      cookieToken = decodeURIComponent(match[1]);
+    }
+  }
 
-  const cookieToken = cookies['arw_admin_session'];
   if (cookieToken) {
     const verified = verifySessionToken(cookieToken);
     if (verified) return verified;

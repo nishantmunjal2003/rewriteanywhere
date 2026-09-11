@@ -23,15 +23,14 @@ export async function POST(request) {
     const response = NextResponse.json({
       success: true,
       message: 'Admin session authenticated successfully.',
-      user: verification.user,
-      token: sessionToken
+      user: verification.user
     });
 
     // Set secure HttpOnly cookie for the session (7 days)
     response.cookies.set('arw_admin_session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       path: '/',
       maxAge: 7 * 24 * 60 * 60
     });

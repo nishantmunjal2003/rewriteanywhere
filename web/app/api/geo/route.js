@@ -3,17 +3,17 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
-  const country = (
+  const rawCountry = (
     request.headers.get('cf-ipcountry') ||
-    request.headers.get('x-country-code') ||
     request.headers.get('x-vercel-ip-country') ||
-    request.headers.get('x-real-ip-country') ||
-    request.headers.get('geoip-country-code') ||
     ''
-  ).toUpperCase();
+  ).trim().toUpperCase();
+
+  // Validate ISO 3166-1 alpha-2 format
+  const country = /^[A-Z]{2}$/.test(rawCountry) ? rawCountry : null;
 
   return NextResponse.json({
-    country: country || null,
+    country,
     isIndia: country === 'IN'
   });
 }

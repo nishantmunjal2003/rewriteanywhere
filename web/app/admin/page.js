@@ -28,7 +28,7 @@ export default function AdminPage() {
   const [notification, setNotification] = useState(null);
 
   // Tab & Coupon States
-  const [activeTab, setActiveTab] = useState('licenses'); // 'licenses' | 'coupons' | 'settings'
+  const [activeTab, setActiveTab] = useState('licenses'); // 'licenses' | 'coupons' | 'releases' | 'settings'
   const [coupons, setCoupons] = useState([]);
   const [couponCode, setCouponCode] = useState('');
   const [couponType, setCouponType] = useState('percentage');
@@ -36,6 +36,19 @@ export default function AdminPage() {
   const [couponMaxUses, setCouponMaxUses] = useState('');
   const [couponExpires, setCouponExpires] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+  const [selectedCouponForHistory, setSelectedCouponForHistory] = useState(null);
+
+  // Software Releases State
+  const [releases, setReleases] = useState([]);
+  const [activeRelease, setActiveRelease] = useState(null);
+  const [releaseCustomersCount, setReleaseCustomersCount] = useState(0);
+  const [releasesLoading, setReleasesLoading] = useState(false);
+  const [uploadingRelease, setUploadingRelease] = useState(false);
+  const [newVersion, setNewVersion] = useState('');
+  const [newNotes, setNewNotes] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
+  const [broadcasting, setBroadcasting] = useState(false);
 
   // Issue Key Form State
   const [issueTier, setIssueTier] = useState('USD_19');
@@ -57,8 +70,9 @@ export default function AdminPage() {
   // Helper for authenticated fetch with credentials (cookie) and Bearer token
   const authFetch = async (url, options = {}) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('arw_admin_token') : null;
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const headers = {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers || {})
     };
     if (token) {
@@ -116,6 +130,7 @@ export default function AdminPage() {
           setIsAuthenticated(true);
           setAdminUser(data.user);
           loadLicenses();
+          fetchReleases();
         } else {
           setIsAuthenticated(false);
           setAdminUser(null);
@@ -342,6 +357,106 @@ export default function AdminPage() {
     }
   };
 
+  // Software Release Handlers
+  const fetchReleases = async () => {
+    setReleasesLoading(true);
+    try {
+      const res = await authFetch('/api/admin/releases');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setReleases(data.releases || []);
+          setActiveRelease(data.activeRelease || null);
+          setReleaseCustomersCount(data.customerCount || 0);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load releases:', err);
+    } finally {
+      setReleasesLoading(false);
+    }
+  };
+
+  const handlePublishRelease = async (e) => {
+    e.preventDefault();
+    if (!newVersion.trim()) {
+      showToast('Please enter a version tag (e.g. v1.1.0)', 'error');
+      return;
+    }
+
+    setUploadingRelease(true);
+    try {
+      const formData = new FormData();
+      formData.append('version', newVersion.trim());
+      formData.append('notes', newNotes.trim());
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      }
+
+      const res = await authFetch('/api/admin/releases/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || 'Release published successfully!');
+        setNewVersion('');
+        setNewNotes('');
+        setSelectedFile(null);
+        fetchReleases();
+      } else {
+        showToast(data.message || 'Failed to publish release.', 'error');
+      }
+    } catch (err) {
+      console.error('Publish release error:', err);
+      showToast(err.message || 'Error uploading release binary.', 'error');
+    } finally {
+      setUploadingRelease(false);
+    }
+  };
+
+  const handleActivateRelease = async (releaseId) => {
+    try {
+      const res = await authFetch('/api/admin/releases', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'activate', releaseId })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || 'Active release updated.');
+        fetchReleases();
+      } else {
+        showToast(data.message || 'Failed to update active release.', 'error');
+      }
+    } catch (err) {
+      showToast('Error setting active release.', 'error');
+    }
+  };
+
+  const handleBroadcastUpdate = async (releaseId) => {
+    setBroadcasting(true);
+    try {
+      const res = await authFetch('/api/admin/releases/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ releaseId })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || `Update email sent to customers!`);
+        setBroadcastModalOpen(false);
+        fetchReleases();
+      } else {
+        showToast(data.message || 'Failed to broadcast update email.', 'error');
+      }
+    } catch (err) {
+      console.error('Broadcast error:', err);
+      showToast(err.message || 'Error broadcasting release email.', 'error');
+    } finally {
+      setBroadcasting(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       const timeout = setTimeout(() => {
@@ -476,7 +591,16 @@ export default function AdminPage() {
 
   // Format Tier Price properly
   const formatTierPrice = (lic) => {
-    if (lic.price && typeof lic.price === 'string' && (lic.price.includes('₹') || lic.price.includes('$'))) {
+    if (lic.couponCode) {
+      if (lic.isFree || lic.finalAmount === 0 || (typeof lic.price === 'string' && lic.price.toLowerCase().includes('free'))) {
+        return `Coupon: ${lic.couponCode} (100% Free)`;
+      }
+      return `Coupon: ${lic.couponCode} (${lic.currency === 'USD' ? '$' : '₹'}${lic.finalAmount ?? lic.price})`;
+    }
+    if (lic.paymentGateway === 'FREE_COUPON' || lic.isFree) {
+      return 'Free Promotion';
+    }
+    if (lic.price && typeof lic.price === 'string' && (lic.price.includes('₹') || lic.price.includes('$') || lic.price.includes('Coupon'))) {
       return lic.price;
     }
     if (lic.price && typeof lic.price === 'number') {
@@ -939,6 +1063,17 @@ export default function AdminPage() {
             <span className="admin-pill-count">{coupons.length}</span>
           </button>
           <button
+            onClick={() => {
+              setActiveTab('releases');
+              fetchReleases();
+            }}
+            className={`admin-nav-tab-btn ${activeTab === 'releases' ? 'active' : ''}`}
+          >
+            <span>🚀</span>
+            <span>Software Releases</span>
+            {releases.length > 0 && <span className="admin-pill-count">{releases.length}</span>}
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={`admin-nav-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
           >
@@ -1357,9 +1492,36 @@ export default function AdminPage() {
                         </td>
 
                         <td>
-                          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                            {formatTierPrice(lic)}
-                          </span>
+                          {lic.couponCode ? (
+                            <div>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  padding: '4px 9px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.82rem',
+                                  fontWeight: 700,
+                                  background: 'rgba(147, 51, 234, 0.12)',
+                                  color: '#9333ea',
+                                  border: '1px solid rgba(147, 51, 234, 0.28)'
+                                }}
+                              >
+                                <span>🎟️</span>
+                                <span>Coupon: <strong>{lic.couponCode}</strong></span>
+                              </span>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '3px' }}>
+                                {lic.isFree || lic.finalAmount === 0 || (typeof lic.price === 'string' && lic.price.toLowerCase().includes('free'))
+                                  ? '100% Free'
+                                  : `Paid ${lic.currency === 'USD' ? '$' : '₹'}${lic.finalAmount ?? lic.price}`}
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                              {formatTierPrice(lic)}
+                            </span>
+                          )}
                         </td>
 
                         <td>
@@ -1580,7 +1742,7 @@ export default function AdminPage() {
                   <tr>
                     <th>Coupon Code</th>
                     <th>Discount</th>
-                    <th>Usage</th>
+                    <th>Usage & Redemptions</th>
                     <th>Expires</th>
                     <th>Status</th>
                     <th style={{ textAlign: 'right' }}>Actions</th>
@@ -1607,9 +1769,28 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td>
-                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            {c.usedCount || 0} {c.maxUses ? `/ ${c.maxUses}` : 'uses'}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                              {c.usedCount || c.usageHistory?.length || 0} {c.maxUses ? `/ ${c.maxUses}` : 'used'}
+                            </span>
+                            {(c.usedCount > 0 || (c.usageHistory && c.usageHistory.length > 0)) && (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCouponForHistory(c)}
+                                className="btn btn-secondary"
+                                style={{
+                                  padding: '3px 8px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 600,
+                                  color: 'var(--accent-primary)',
+                                  borderColor: 'rgba(99, 102, 241, 0.3)',
+                                  background: 'rgba(99, 102, 241, 0.08)'
+                                }}
+                              >
+                                👥 Who Used ({c.usageHistory?.length || c.usedCount})
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
@@ -1646,6 +1827,524 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Coupon Redemption History Modal */}
+          {selectedCouponForHistory && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                backdropFilter: 'blur(6px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px'
+              }}
+              onClick={() => setSelectedCouponForHistory(null)}
+            >
+              <div
+                className="card"
+                style={{
+                  width: '100%',
+                  maxWidth: '820px',
+                  maxHeight: '85vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: '28px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6)'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.4rem' }}>🎟️</span>
+                      <h2 className="heading-md" style={{ margin: 0 }}>
+                        Coupon Redemptions: <code className="admin-key-code" style={{ color: 'var(--accent-primary)', fontSize: '1.1rem' }}>{selectedCouponForHistory.code}</code>
+                      </h2>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
+                      {selectedCouponForHistory.discountType === 'percentage'
+                        ? `${selectedCouponForHistory.discountValue}% OFF discount`
+                        : `Fixed ${selectedCouponForHistory.discountValue} OFF discount`}
+                      {' • '}
+                      Total redemptions: <strong>{selectedCouponForHistory.usageHistory?.length || selectedCouponForHistory.usedCount || 0}</strong>
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCouponForHistory(null)}
+                    className="btn btn-secondary"
+                    style={{ padding: '6px 14px', fontSize: '0.9rem' }}
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+
+                <div className="table-wrapper" style={{ flex: 1, overflowY: 'auto', margin: 0 }}>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>License Key</th>
+                        <th>Order ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!selectedCouponForHistory.usageHistory || selectedCouponForHistory.usageHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                            No detailed redemptions recorded for this coupon yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedCouponForHistory.usageHistory.map((item, idx) => (
+                          <tr key={idx}>
+                            <td style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                              {item.usedAt ? new Date(item.usedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                            </td>
+                            <td style={{ fontWeight: 600, fontSize: '0.88rem' }}>
+                              {item.customerName || 'Customer'}
+                            </td>
+                            <td>
+                              {item.email ? (
+                                <a href={`mailto:${item.email}`} style={{ color: 'var(--accent-secondary)', fontSize: '0.85rem' }}>
+                                  {item.email}
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>N/A</span>
+                              )}
+                            </td>
+                            <td>
+                              {item.licenseKey ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <code className="admin-key-code" style={{ fontSize: '0.82rem' }}>{item.licenseKey}</code>
+                                  <button
+                                    title="Copy License Key"
+                                    onClick={() => copyToClipboard(item.licenseKey, 'License Key')}
+                                    className="admin-quick-btn"
+                                  >
+                                    {copiedKey === item.licenseKey ? '✓' : '📋'}
+                                  </button>
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>N/A</span>
+                              )}
+                            </td>
+                            <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                              {item.orderId || 'N/A'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Software Releases Tab */}
+      {activeTab === 'releases' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          {/* Release Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+            <div className="admin-metric-card">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Active Production Version
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                  {activeRelease?.version || 'v1.0.0-PROD'}
+                </span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: '#10b981',
+                  fontWeight: 700,
+                  border: '1px solid rgba(16, 185, 129, 0.3)'
+                }}>
+                  ACTIVE
+                </span>
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+                Released: {activeRelease?.releaseDate ? new Date(activeRelease.releaseDate).toLocaleDateString() : 'Active'}
+              </span>
+            </div>
+
+            <div className="admin-metric-card">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Installer File (.exe)
+              </span>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '10px', wordBreak: 'break-all' }}>
+                {activeRelease?.fileName || 'AI-Rewrite-Anywhere-Setup.exe'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  Size: {activeRelease?.fileSize || '3.1 MB'}
+                </span>
+                <a
+                  href={activeRelease?.downloadUrl || 'https://rewriteanywhere.nishantmunjal.com/downloads/AI-Rewrite-Anywhere-Setup.exe'}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '0.82rem', color: 'var(--accent-primary)', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  ⬇️ Test Download
+                </a>
+              </div>
+            </div>
+
+            <div className="admin-metric-card">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Licensed Customers
+              </span>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '10px' }}>
+                {releaseCustomersCount} Users
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+                Eligible for update email broadcast
+              </span>
+            </div>
+
+            <div className="admin-metric-card">
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Email Broadcast Status
+              </span>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: activeRelease?.broadcastCount ? '#10b981' : '#f59e0b', marginTop: '10px' }}>
+                {activeRelease?.broadcastCount ? `${activeRelease.broadcastCount} Broadcast(s)` : 'Not Mailed Yet'}
+              </div>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+                {activeRelease?.lastBroadcastAt ? `Last sent: ${new Date(activeRelease.lastBroadcastAt).toLocaleDateString()}` : 'Ready to send on 1-click'}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Grid: Publish Form + Broadcast Box */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+            {/* Publish New Release Form */}
+            <div className="card" style={{ padding: '28px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div>
+                  <h2 className="heading-md" style={{ margin: '0 0 4px' }}>Upload & Publish New Version</h2>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                    Upload a new <code>.exe</code> installer binary or configure version notes.
+                  </p>
+                </div>
+                <span style={{ fontSize: '1.6rem' }}>🚀</span>
+              </div>
+
+              <form onSubmit={handlePublishRelease} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label className="label" style={{ display: 'block', marginBottom: '6px' }}>
+                    Version Tag <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="e.g. v1.1.0 or v1.0.1-PROD"
+                    value={newVersion}
+                    onChange={(e) => setNewVersion(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label" style={{ display: 'block', marginBottom: '6px' }}>
+                    New Installer Binary (.exe)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".exe"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      background: 'var(--bg-surface-elevated)',
+                      border: '1px dashed var(--border-subtle)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.88rem'
+                    }}
+                  />
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    {selectedFile ? (
+                      <span style={{ color: '#10b981' }}>
+                        Selected: <strong>{selectedFile.name}</strong> ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                      </span>
+                    ) : (
+                      'Optional: If omitted, the existing AI-Rewrite-Anywhere-Setup.exe binary will be kept.'
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="label" style={{ display: 'block', marginBottom: '6px' }}>
+                    Changelog & Release Notes (What&apos;s New)
+                  </label>
+                  <textarea
+                    className="input"
+                    rows={4}
+                    placeholder="- Added support for Markdown formatting&#10;- Reduced AI response latency&#10;- Bug fixes and system tray stability improvements"
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    These bullet points will appear in the customer email notification and release history.
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={uploadingRelease}
+                  className="btn btn-primary"
+                  style={{ marginTop: '8px', padding: '12px' }}
+                >
+                  {uploadingRelease ? 'Uploading & Publishing...' : '🚀 Publish New Release Version'}
+                </button>
+              </form>
+            </div>
+
+            {/* One-Click Broadcast Update Card */}
+            <div className="card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div>
+                    <h2 className="heading-md" style={{ margin: '0 0 4px' }}>Email Customers on Update</h2>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                      One-click announcement via ZeptoMail
+                    </p>
+                  </div>
+                  <span style={{ fontSize: '1.6rem' }}>📢</span>
+                </div>
+
+                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                    Target Customers: <strong style={{ color: 'var(--text-primary)' }}>{releaseCustomersCount} licensed buyers</strong>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                    Release to Announce: <span className="hero-kbd">{activeRelease?.version || 'v1.0.0-PROD'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                    Delivery Service: <strong style={{ color: '#10b981' }}>ZeptoMail Transactional Email</strong>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '16px' }}>
+                  Clicking the button below will immediately dispatch an email to all {releaseCustomersCount} licensed customers with the new version notes and direct download button.
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setBroadcastModalOpen(true)}
+                  disabled={broadcasting || releaseCustomersCount === 0}
+                  className="btn btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.95rem',
+                    background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
+                    boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)'
+                  }}
+                >
+                  ✉️ Mail All Licensed Customers ({releaseCustomersCount})
+                </button>
+                {activeRelease?.lastBroadcastAt && (
+                  <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '8px' }}>
+                    Last broadcast sent on {new Date(activeRelease.lastBroadcastAt).toLocaleString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Release History Table */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  Published Release History
+                </h3>
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  All software version builds and their broadcast delivery status.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={fetchReleases}
+                disabled={releasesLoading}
+                className="btn btn-secondary"
+                style={{ padding: '6px 14px', fontSize: '0.82rem' }}
+              >
+                {releasesLoading ? 'Refreshing...' : '🔄 Refresh Releases'}
+              </button>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table" style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Version</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Release Date</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>File / Size</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Changelog</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Broadcast</th>
+                    <th style={{ padding: '12px 14px', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {releases.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                        No releases found.
+                      </td>
+                    </tr>
+                  ) : (
+                    releases.map((rel) => (
+                      <tr key={rel.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <td style={{ padding: '14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                              {rel.version}
+                            </span>
+                            {rel.isActive && (
+                              <span style={{
+                                fontSize: '0.7rem',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                background: 'rgba(16, 185, 129, 0.15)',
+                                color: '#10b981',
+                                fontWeight: 700
+                              }}>
+                                ACTIVE
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ padding: '14px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                          {rel.releaseDate ? new Date(rel.releaseDate).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td style={{ padding: '14px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                          <div>{rel.fileName}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{rel.fileSize}</div>
+                        </td>
+                        <td style={{ padding: '14px', fontSize: '0.82rem', color: 'var(--text-secondary)', maxWidth: '300px' }}>
+                          <div style={{ whiteSpace: 'pre-wrap', maxHeight: '60px', overflowY: 'auto' }}>
+                            {rel.notes || 'No changelog specified.'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '14px', fontSize: '0.82rem' }}>
+                          {rel.broadcastCount ? (
+                            <span style={{ color: '#10b981', fontWeight: 600 }}>
+                              ✓ Sent ({rel.broadcastCount})
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>
+                              Not mailed
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '14px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            {!rel.isActive && (
+                              <button
+                                type="button"
+                                onClick={() => handleActivateRelease(rel.id)}
+                                className="btn btn-secondary"
+                                style={{ padding: '6px 12px', fontSize: '0.78rem' }}
+                              >
+                                Set Active
+                              </button>
+                            )}
+                            <a
+                              href={rel.downloadUrl}
+                              className="btn btn-secondary"
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{ padding: '6px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
+                            >
+                              ⬇️ .exe
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast Confirmation Modal */}
+      {broadcastModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div className="card" style={{ maxWidth: '520px', width: '100%', padding: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '8px' }}>📢</div>
+              <h2 className="heading-md" style={{ margin: '0 0 6px' }}>Confirm Update Broadcast</h2>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>
+                You are about to email <strong>{releaseCustomersCount} licensed customers</strong>.
+              </p>
+            </div>
+
+            <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '20px', fontSize: '0.85rem' }}>
+              <div style={{ marginBottom: '6px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Version:</span> <strong style={{ color: 'var(--text-primary)' }}>{activeRelease?.version}</strong>
+              </div>
+              <div style={{ marginBottom: '6px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Subject:</span> <code style={{ color: '#818cf8' }}>🚀 New Update Released: AI Rewrite Anywhere {activeRelease?.version}</code>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Installer URL:</span> <span style={{ color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{activeRelease?.downloadUrl}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setBroadcastModalOpen(false)}
+                disabled={broadcasting}
+                className="btn btn-secondary"
+                style={{ padding: '10px 20px' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBroadcastUpdate(activeRelease?.id)}
+                disabled={broadcasting}
+                className="btn btn-primary"
+                style={{ padding: '10px 22px', background: 'linear-gradient(135deg, #4f46e5, #06b6d4)' }}
+              >
+                {broadcasting ? 'Sending Emails...' : `Yes, Send to ${releaseCustomersCount} Customers`}
+              </button>
             </div>
           </div>
         </div>
