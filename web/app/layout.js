@@ -172,7 +172,7 @@ const jsonLdData = {
       contactPoint: {
         '@type': 'ContactPoint',
         contactType: 'customer support',
-        email: 'support@rewriteanywhere.com',
+        email: 'nishant.eth2@gmail.com',
         url: 'https://rewriteanywhere.nishantmunjal.com/support',
       },
     },
@@ -265,7 +265,7 @@ export default function RootLayout({ children }) {
                   <li><a href="/terms" className="footer-link">Terms of Service</a></li>
                   <li><a href="/privacy" className="footer-link">Privacy Policy</a></li>
                   <li><a href="https://nishantmunjal.com/nmril" target="_blank" rel="noopener noreferrer" className="footer-link">NMRILLabs</a></li>
-                  <li><a href="mailto:support@rewriteanywhere.com" className="footer-link">support@rewriteanywhere.com</a></li>
+                  <li><a href="mailto:nishant.eth2@gmail.com" className="footer-link">nishant.eth2@gmail.com</a></li>
                 </ul>
               </div>
             </div>

@@ -99,7 +99,7 @@ function SuccessContent() {
             <Link href="/" className="btn btn-secondary">
               Back to Home
             </Link>
-            <a href="mailto:support@rewriteanywhere.com" className="btn btn-primary">
+            <a href="mailto:nishant.eth2@gmail.com" className="btn btn-primary">
               Contact Support
             </a>
           </div>

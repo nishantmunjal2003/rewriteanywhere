@@ -64,7 +64,7 @@ export default function SupportPage() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <h2 className="heading-md" style={{ marginBottom: '4px' }}>Send Us a Message</h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '16px' }}>
-                Or contact us directly via email at <a href="mailto:support@rewriteanywhere.com" style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>support@rewriteanywhere.com</a>.
+                Or contact us directly via email at <a href="mailto:nishant.eth2@gmail.com" style={{ color: 'var(--accent-primary)', textDecoration: 'underline' }}>nishant.eth2@gmail.com</a>.
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

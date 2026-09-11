@@ -155,7 +155,7 @@ export async function sendLicenseEmail({ toEmail, customerName, licenseKey, orde
 
     <div class="footer">
       AI Rewrite Anywhere • 14-Day 100% Money-Back Guarantee<br/>
-      Need support? Contact <a href="mailto:support@rewriteanywhere.com" style="color: #818cf8;">support@rewriteanywhere.com</a>
+      Need support? Contact <a href="mailto:nishant.eth2@gmail.com" style="color: #818cf8;">nishant.eth2@gmail.com</a>
     </div>
   </div>
 </body>
@@ -435,7 +435,7 @@ export async function sendReleaseUpdateEmail({
 
     <div class="footer">
       You are receiving this update announcement because you purchased an AI Rewrite Anywhere commercial license.<br/>
-      Dashboard: <a href="https://rewriteanywhere.nishantmunjal.com/dashboard" style="color: #38bdf8;">rewriteanywhere.nishantmunjal.com/dashboard</a> • Support: <a href="mailto:support@rewriteanywhere.com" style="color: #818cf8;">support@rewriteanywhere.com</a>
+      Dashboard: <a href="https://rewriteanywhere.nishantmunjal.com/dashboard" style="color: #38bdf8;">rewriteanywhere.nishantmunjal.com/dashboard</a> • Support: <a href="mailto:nishant.eth2@gmail.com" style="color: #818cf8;">nishant.eth2@gmail.com</a>
     </div>
   </div>
 </body>

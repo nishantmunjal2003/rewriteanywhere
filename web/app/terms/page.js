@@ -29,7 +29,7 @@ export default function TermsPage() {
           <section>
             <h2 className="heading-md" style={{ color: 'var(--accent-primary)' }}>2. 14-Day Money-Back Guarantee</h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              We offer a no-risk <strong>14-day 100% money-back guarantee</strong>. If you are unsatisfied with AI Rewrite Anywhere for any reason within fourteen (14) calendar days of your purchase date, email <a href="mailto:support@rewriteanywhere.com" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>support@rewriteanywhere.com</a> with your order details. We will deactivate the license key and issue a full refund to your original payment method with no questions asked.
+              We offer a no-risk <strong>14-day 100% money-back guarantee</strong>. If you are unsatisfied with AI Rewrite Anywhere for any reason within fourteen (14) calendar days of your purchase date, email <a href="mailto:nishant.eth2@gmail.com" style={{ color: 'var(--accent-secondary)', textDecoration: 'underline' }}>nishant.eth2@gmail.com</a> with your order details. We will deactivate the license key and issue a full refund to your original payment method with no questions asked.
             </p>
           </section>
 

@@ -121,7 +121,7 @@ export default function HomePage() {
     },
     {
       q: 'How does the 14-day money-back guarantee work?',
-      a: 'We stand 100% behind our software. If AI Rewrite Anywhere does not save you hours every week, simply email support@rewriteanywhere.com within 14 days of purchase with your license key, and we will issue a full, unconditional refund immediately.'
+      a: 'We stand 100% behind our software. If AI Rewrite Anywhere does not save you hours every week, simply email nishant.eth2@gmail.com within 14 days of purchase with your license key, and we will issue a full, unconditional refund immediately.'
     },
     {
       q: 'Do I have to pay ongoing monthly subscriptions for AI models?',

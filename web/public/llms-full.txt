@@ -62,10 +62,10 @@ Most cloud AI writing extensions charge $12 to $30 every month to maintain a hos
 A: No. AI Rewrite Anywhere is engineered specifically for Windows 10 & 11 (64-bit) using Win32 API hooks and Windows UI Automation.
 
 **Q: Can I transfer my license to a new PC?**
-A: Yes. Each license covers 1 active PC at a time. If you upgrade, replace, or reinstall Windows on your computer, support@rewriteanywhere.com will reset your machine binding immediately.
+A: Yes. Each license covers 1 active PC at a time. If you upgrade, replace, or reinstall Windows on your computer, nishant.eth2@gmail.com will reset your machine binding immediately.
 
 **Q: Do I have to pay monthly subscriptions for AI?**
 A: No. AI Rewrite Anywhere uses a BYOK architecture. Using Google's free Gemini API tier, most users spend $0.00 each month.
 
 **Q: How does the 14-day refund guarantee work?**
-A: If the app does not meet your expectations, email support@rewriteanywhere.com with your license key within 14 days for a full, unconditional refund.
+A: If the app does not meet your expectations, email nishant.eth2@gmail.com with your license key within 14 days for a full, unconditional refund.

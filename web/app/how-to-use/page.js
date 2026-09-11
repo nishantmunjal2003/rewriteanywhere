@@ -100,7 +100,7 @@ export default function HowToUsePage() {
               <li>Paste your license key into the input field and click <strong>Activate License</strong>.</li>
             </ol>
             <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-bright)', padding: '14px 18px', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-              🔒 <strong>Single Active PC Protection:</strong> Each license key binds to exactly one active PC hardware ID. If you change your computer or reinstall Windows, simply email <a href="mailto:support@rewriteanywhere.com" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>support@rewriteanywhere.com</a> and we will gladly reset your device binding.
+              🔒 <strong>Single Active PC Protection:</strong> Each license key binds to exactly one active PC hardware ID. If you change your computer or reinstall Windows, simply email <a href="mailto:nishant.eth2@gmail.com" style={{ textDecoration: 'underline', color: 'var(--accent-primary)' }}>nishant.eth2@gmail.com</a> and we will gladly reset your device binding.
             </div>
           </div>
         </div>
